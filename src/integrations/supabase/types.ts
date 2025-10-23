@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      calls: {
+        Row: {
+          created_at: string
+          duration_sec: number | null
+          ended_at: string | null
+          id: string
+          intent: string | null
+          phone_number: string
+          sentiment: string | null
+          started_at: string
+          status: string
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_sec?: number | null
+          ended_at?: string | null
+          id?: string
+          intent?: string | null
+          phone_number: string
+          sentiment?: string | null
+          started_at?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_sec?: number | null
+          ended_at?: string | null
+          id?: string
+          intent?: string | null
+          phone_number?: string
+          sentiment?: string | null
+          started_at?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
