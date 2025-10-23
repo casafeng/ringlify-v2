@@ -3,7 +3,6 @@ import { MetricCard } from "@/components/MetricCard";
 import { SalesFunnel } from "@/components/SalesFunnel";
 import { DeviceChart } from "@/components/DeviceChart";
 import { AudienceChart } from "@/components/AudienceChart";
-import { CallsTable } from "@/components/CallsTable";
 import { BookingsTable } from "@/components/BookingsTable";
 
 const Dashboard = () => {
@@ -52,7 +51,6 @@ const Dashboard = () => {
         </div>
 
         {/* Tables */}
-        <CallsTable />
         <BookingsTable />
       </div>
     </DashboardLayout>

@@ -122,6 +122,7 @@ const Calls = () => {
       intent: call.intent || "Unknown",
       outcome: call.status,
       sentiment: call.sentiment || "Unknown",
+      transcript: call.transcript,
     });
   };
 

@@ -195,21 +195,72 @@ Make every conversation fast, natural, and helpful. Show that Ringlfy brings hum
         console.log('Media stream started:', message.start);
       }
 
-      // Handle stream stop - save transcript
+      // Handle stream stop - save transcript, sentiment, and intent
       if (message.event === 'stop') {
         console.log('Media stream stopped');
         
         if (callId && transcriptBuffer) {
-          // Save transcript to database
-          const { error } = await supabase
-            .from('calls')
-            .update({ transcript: transcriptBuffer })
-            .eq('id', callId);
+          try {
+            // Analyze sentiment and intent using OpenAI
+            const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                  {
+                    role: 'system',
+                    content: `Analyze the following phone call transcript and provide:
+1. Sentiment: Positive, Neutral, or Negative
+2. Intent: One of these categories: Schedule, Reschedule, Cancel, FAQ, Handoff, or Other
 
-          if (error) {
-            console.error('Error saving transcript:', error);
-          } else {
-            console.log('Transcript saved for call:', callId);
+Respond in JSON format: {"sentiment": "...", "intent": "..."}`
+                  },
+                  {
+                    role: 'user',
+                    content: transcriptBuffer
+                  }
+                ],
+                temperature: 0.3,
+                response_format: { type: "json_object" }
+              })
+            });
+
+            const analysisData = await analysisResponse.json();
+            const analysis = JSON.parse(analysisData.choices[0].message.content);
+            
+            console.log('Call analysis:', analysis);
+
+            // Save transcript, sentiment, and intent to database
+            const { error } = await supabase
+              .from('calls')
+              .update({ 
+                transcript: transcriptBuffer,
+                sentiment: analysis.sentiment,
+                intent: analysis.intent
+              })
+              .eq('id', callId);
+
+            if (error) {
+              console.error('Error saving call data:', error);
+            } else {
+              console.log('Call data saved for call:', callId);
+            }
+          } catch (error) {
+            console.error('Error analyzing call:', error);
+            
+            // Save at least the transcript even if analysis fails
+            const { error: saveError } = await supabase
+              .from('calls')
+              .update({ transcript: transcriptBuffer })
+              .eq('id', callId);
+              
+            if (saveError) {
+              console.error('Error saving transcript:', saveError);
+            }
           }
         }
       }
