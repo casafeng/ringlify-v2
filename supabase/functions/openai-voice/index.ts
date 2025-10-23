@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import WebSocket from "https://esm.sh/ws@8.18.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -58,25 +57,19 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let openAISocket: any = null;
+    let openAISocket: WebSocket | null = null;
     let transcriptBuffer = '';
 
     clientSocket.onopen = () => {
       console.log('Client WebSocket connected');
 
-      // Connect to OpenAI Realtime API with proper headers using ws library
-      const wsUrl = 'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01';
+      // Connect to OpenAI Realtime API with API key as query parameter
+      const wsUrl = `wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01&api-key=${OPENAI_API_KEY}`;
       
       console.log('Connecting to OpenAI Realtime API...');
       
-      openAISocket = new WebSocket(wsUrl, {
-        headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-          'OpenAI-Beta': 'realtime=v1',
-        }
-      });
-
-      openAISocket.onopen = () => {
+      openAISocket = new WebSocket(wsUrl);
+      openAISocket.addEventListener('open', () => {
         console.log('OpenAI WebSocket connected');
         
         // Send session configuration
@@ -130,9 +123,9 @@ Make every conversation fast, natural, and helpful. Show that Ringlfy brings hum
             max_response_output_tokens: 'inf'
           }
         }));
-      };
+      });
 
-      openAISocket.onmessage = (event: any) => {
+      openAISocket.addEventListener('message', (event: any) => {
         const data = JSON.parse(event.data);
         console.log('OpenAI event:', data.type);
 
@@ -170,15 +163,15 @@ Make every conversation fast, natural, and helpful. Show that Ringlfy brings hum
         if (data.type === 'error') {
           console.error('OpenAI error:', data.error);
         }
-      };
+      });
 
-      openAISocket.onerror = (error: any) => {
+      openAISocket.addEventListener('error', (error: any) => {
         console.error('OpenAI WebSocket error:', error);
-      };
+      });
 
-      openAISocket.onclose = () => {
+      openAISocket.addEventListener('close', () => {
         console.log('OpenAI WebSocket closed');
-      };
+      });
     };
 
     clientSocket.onmessage = async (event) => {
