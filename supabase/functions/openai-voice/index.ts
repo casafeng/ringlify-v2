@@ -1,28 +1,56 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, upgrade, connection',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+};
+
 serve(async (req) => {
+  console.log('=== OPENAI-VOICE FUNCTION CALLED ===');
+  console.log('Method:', req.method);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   const { headers } = req;
   const upgradeHeader = headers.get("upgrade") || "";
 
+  console.log('Upgrade header:', upgradeHeader);
+
   if (upgradeHeader.toLowerCase() !== "websocket") {
-    return new Response("Expected WebSocket connection", { status: 400 });
+    console.error('Not a WebSocket connection request');
+    return new Response("Expected WebSocket connection", { 
+      status: 400,
+      headers: corsHeaders 
+    });
   }
 
   const url = new URL(req.url);
   const callId = url.searchParams.get('callId');
 
-  console.log('OpenAI Voice WebSocket connection requested for callId:', callId);
+  console.log('WebSocket upgrade requested for callId:', callId);
 
   try {
+    console.log('Attempting WebSocket upgrade...');
+    
     // Upgrade to WebSocket
     const { socket: clientSocket, response } = Deno.upgradeWebSocket(req);
+    
+    console.log('WebSocket upgrade successful!');
 
     // Get OpenAI API key
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     if (!OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY not configured');
       throw new Error('OPENAI_API_KEY not configured');
     }
+    
+    console.log('OpenAI API key found');
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
