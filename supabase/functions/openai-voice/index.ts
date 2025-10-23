@@ -32,8 +32,9 @@ serve(async (req) => {
 
   const url = new URL(req.url);
   const callId = url.searchParams.get('callId');
+  const customerId = url.searchParams.get('customerId');
 
-  console.log('WebSocket upgrade requested for callId:', callId);
+  console.log('WebSocket upgrade requested for callId:', callId, 'customerId:', customerId);
 
   try {
     console.log('Attempting WebSocket upgrade...');
@@ -57,6 +58,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Load customer AI configuration
+    let aiConfig: any = null;
+    if (customerId) {
+      const { data, error } = await supabase
+        .from('ai_configurations')
+        .select('*')
+        .eq('customer_id', customerId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading AI config:', error);
+      } else {
+        aiConfig = data;
+        console.log('Loaded AI config for customer:', customerId);
+      }
+    }
+
     let openAISocket: WebSocket | null = null;
     let transcriptBuffer = '';
 
@@ -72,18 +90,37 @@ serve(async (req) => {
       openAISocket.addEventListener('open', () => {
         console.log('OpenAI WebSocket connected');
         
-        // Send session configuration
-        openAISocket?.send(JSON.stringify({
-          type: 'session.update',
-          session: {
-            modalities: ['text', 'audio'],
-            instructions: `You are Ringlfy, an AI voice assistant that helps businesses handle phone calls with human-like intelligence.
+        // Build dynamic instructions from customer AI configuration
+        const personality = aiConfig?.personality || 'professional and friendly';
+        const tone = aiConfig?.tone || 'warm';
+        const greeting = aiConfig?.greeting || 'Hello! How can I help you today?';
+        const businessContext = aiConfig?.business_context || 'You are an AI assistant helping a business.';
+        const faqs = aiConfig?.faqs || [];
+        const schedulingRules = aiConfig?.scheduling_rules || {};
 
-ROLE & IDENTITY:
-You represent Ringlfy professionally and naturally. Never describe yourself as a chatbot or robot. You are an AI assistant trained by Ringlfy to answer calls, assist customers, and handle requests efficiently.
+        // Build FAQ section
+        let faqSection = '';
+        if (faqs && faqs.length > 0) {
+          faqSection = '\n\nFREQUENTLY ASKED QUESTIONS:\n' + 
+            faqs.map((faq: any) => `Q: ${faq.question}\nA: ${faq.answer}`).join('\n\n');
+        }
+
+        // Build scheduling section
+        let schedulingSection = '';
+        if (schedulingRules && Object.keys(schedulingRules).length > 0) {
+          schedulingSection = '\n\nSCHEDULING RULES:\n' +
+            `Business Hours: ${schedulingRules.business_hours || 'Not specified'}\n` +
+            `Booking Duration: ${schedulingRules.booking_duration || 'Not specified'}\n` +
+            `Advance Notice: ${schedulingRules.advance_notice || 'Not specified'}`;
+        }
+
+        const instructions = `${businessContext}
+
+PERSONALITY & TONE:
+You have a ${personality} personality with a ${tone} tone. Always greet callers with: "${greeting}"
 
 COMMUNICATION STYLE:
-- Speak warmly, naturally, and confidently in short conversational sentences
+- Speak naturally and confidently in short conversational sentences
 - Stay calm and friendly, mirroring the caller's tone when appropriate
 - Use active language like "Let me check that for you" or "Sure, I can help"
 - Sound human and empathetic, never robotic or overly formal
@@ -95,18 +132,23 @@ CORE BEHAVIOR:
 3. Respond naturally in one or two spoken sentences
 4. Take action when possible (schedule, log, confirm)
 5. Close gracefully: "Glad to help today — talk soon!"
-
-ABOUT RINGLFY (when asked):
-Ringlfy is an AI voice platform that helps businesses automate phone calls with human-like intelligence. It answers, books, and assists customers 24/7 — handling everything from scheduling to support naturally and efficiently.
-
-APPOINTMENT BOOKING:
-If someone wants to book, say: "Sure, I can help schedule that. What date and time work best for you?" Then confirm the details clearly.
+${faqSection}
+${schedulingSection}
 
 FALLBACK:
 If you cannot understand or fulfill a request, clarify once. If still unclear: "I might need to pass this to our team so they can assist further. Can I take your contact info?"
 
 MISSION:
-Make every conversation fast, natural, and helpful. Show that Ringlfy brings human warmth and intelligent automation together. Every caller should feel heard, understood, and helped.`,
+Make every conversation fast, natural, and helpful. Every caller should feel heard, understood, and helped.`;
+
+        console.log('Using AI instructions for customer:', customerId);
+
+        // Send session configuration
+        openAISocket?.send(JSON.stringify({
+          type: 'session.update',
+          session: {
+            modalities: ['text', 'audio'],
+            instructions,
             voice: 'alloy',
             input_audio_format: 'pcm16',
             output_audio_format: 'pcm16',

@@ -45,13 +45,28 @@ serve(async (req) => {
 
       console.log('Call details - From:', from, 'To:', to, 'CallSid:', callSid);
 
+      // Look up customer_id from phone_numbers table using the To number
+      const { data: phoneNumber, error: phoneError } = await supabase
+        .from('phone_numbers')
+        .select('customer_id')
+        .eq('phone_number', to)
+        .maybeSingle();
+
+      if (phoneError) {
+        console.error('Error looking up phone number:', phoneError);
+      }
+
+      const customerId = phoneNumber?.customer_id;
+      console.log('Customer ID for phone number:', customerId);
+
       // Create call record in database
       const { data: call, error } = await supabase
         .from('calls')
         .insert({
           phone_number: from,
           twilio_call_sid: callSid,
-          status: 'in-progress'
+          status: 'in-progress',
+          customer_id: customerId
         })
         .select()
         .single();
@@ -65,7 +80,7 @@ serve(async (req) => {
       // Build WebSocket URL for OpenAI edge function
       // CRITICAL: Use the full Supabase project URL for WebSocket
       const projectId = 'qwnollcgtkduspiojzpd';
-      const wsUrl = `wss://${projectId}.supabase.co/functions/v1/openai-voice?callId=${call?.id || callSid}`;
+      const wsUrl = `wss://${projectId}.supabase.co/functions/v1/openai-voice?callId=${call?.id || callSid}&customerId=${customerId || ''}`;
       
       console.log('WebSocket URL:', wsUrl);
       
