@@ -15,8 +15,9 @@ serve(async (req) => {
     const url = new URL(req.url);
     const pathname = url.pathname;
 
-    console.log('Twilio webhook called:', pathname);
-    console.log('Request method:', req.method);
+    console.log('=== TWILIO WEBHOOK RECEIVED ===');
+    console.log('Path:', pathname);
+    console.log('Method:', req.method);
     console.log('Content-Type:', req.headers.get('content-type'));
 
     // Initialize Supabase client
@@ -24,17 +25,25 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle incoming call
+    // Handle incoming call - Twilio can send GET or POST
     if (pathname.includes('/incoming')) {
-      // Parse URL-encoded form data from Twilio
-      const body = await req.text();
-      console.log('Request body:', body);
-      const params = new URLSearchParams(body);
+      console.log('=== INCOMING CALL HANDLER ===');
+      
+      // Parse parameters from either GET query string or POST body
+      let params: URLSearchParams;
+      if (req.method === 'GET') {
+        params = new URLSearchParams(url.search);
+      } else {
+        const body = await req.text();
+        console.log('POST body:', body);
+        params = new URLSearchParams(body);
+      }
+      
       const from = params.get('From') || '';
       const callSid = params.get('CallSid') || '';
       const to = params.get('To') || '';
 
-      console.log('Incoming call from:', from, 'to:', to, 'CallSid:', callSid);
+      console.log('Call details - From:', from, 'To:', to, 'CallSid:', callSid);
 
       // Create call record in database
       const { data: call, error } = await supabase
@@ -53,19 +62,25 @@ serve(async (req) => {
         console.log('Call record created:', call.id);
       }
 
-      // Get WebSocket URL for OpenAI edge function
-      const wsUrl = `wss://${url.host}/functions/v1/openai-voice?callId=${call?.id || callSid}`;
+      // Build WebSocket URL for OpenAI edge function
+      // CRITICAL: Use the full Supabase project URL for WebSocket
+      const projectId = 'qwnollcgtkduspiojzpd';
+      const wsUrl = `wss://${projectId}.supabase.co/functions/v1/openai-voice?callId=${call?.id || callSid}`;
+      
+      console.log('WebSocket URL:', wsUrl);
       
       // Return TwiML to start Media Stream
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Please wait while we connect you to our AI assistant.</Say>
+    <Say>Connecting you to Ringlfy AI assistant.</Say>
     <Connect>
         <Stream url="${wsUrl}">
             <Parameter name="callId" value="${call?.id || callSid}" />
         </Stream>
     </Connect>
 </Response>`;
+
+      console.log('Returning TwiML:', twiml);
 
       return new Response(twiml, {
         headers: {
@@ -77,14 +92,22 @@ serve(async (req) => {
 
     // Handle call status updates
     if (pathname.includes('/status')) {
-      const body = await req.text();
-      const params = new URLSearchParams(body);
+      console.log('=== STATUS CALLBACK ===');
+      
+      // Parse parameters from either GET or POST
+      let params: URLSearchParams;
+      if (req.method === 'GET') {
+        params = new URLSearchParams(url.search);
+      } else {
+        const body = await req.text();
+        params = new URLSearchParams(body);
+      }
+      
       const callSid = params.get('CallSid') || '';
       const callStatus = params.get('CallStatus') || '';
       const callDuration = params.get('CallDuration') || '0';
-      const from = params.get('From') || '';
 
-      console.log('Call status update:', callSid, callStatus, callDuration);
+      console.log('Status update - CallSid:', callSid, 'Status:', callStatus, 'Duration:', callDuration);
 
       // Update call record when call ends
       if (callStatus === 'completed') {
