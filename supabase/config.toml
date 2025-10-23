@@ -1,1 +1,7 @@
 project_id = "qwnollcgtkduspiojzpd"
+
+[functions.twilio-voice]
+verify_jwt = false
+
+[functions.openai-voice]
+verify_jwt = false
