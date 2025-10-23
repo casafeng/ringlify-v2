@@ -16,6 +16,8 @@ serve(async (req) => {
     const pathname = url.pathname;
 
     console.log('Twilio webhook called:', pathname);
+    console.log('Request method:', req.method);
+    console.log('Content-Type:', req.headers.get('content-type'));
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -24,17 +26,22 @@ serve(async (req) => {
 
     // Handle incoming call
     if (pathname.includes('/incoming')) {
-      const formData = await req.formData();
-      const from = formData.get('From') as string;
-      const callSid = formData.get('CallSid') as string;
+      // Parse URL-encoded form data from Twilio
+      const body = await req.text();
+      console.log('Request body:', body);
+      const params = new URLSearchParams(body);
+      const from = params.get('From') || '';
+      const callSid = params.get('CallSid') || '';
+      const to = params.get('To') || '';
 
-      console.log('Incoming call from:', from, 'CallSid:', callSid);
+      console.log('Incoming call from:', from, 'to:', to, 'CallSid:', callSid);
 
       // Create call record in database
       const { data: call, error } = await supabase
         .from('calls')
         .insert({
           phone_number: from,
+          twilio_call_sid: callSid,
           status: 'in-progress'
         })
         .select()
@@ -70,10 +77,12 @@ serve(async (req) => {
 
     // Handle call status updates
     if (pathname.includes('/status')) {
-      const formData = await req.formData();
-      const callSid = formData.get('CallSid') as string;
-      const callStatus = formData.get('CallStatus') as string;
-      const callDuration = formData.get('CallDuration') as string;
+      const body = await req.text();
+      const params = new URLSearchParams(body);
+      const callSid = params.get('CallSid') || '';
+      const callStatus = params.get('CallStatus') || '';
+      const callDuration = params.get('CallDuration') || '0';
+      const from = params.get('From') || '';
 
       console.log('Call status update:', callSid, callStatus, callDuration);
 
@@ -84,10 +93,9 @@ serve(async (req) => {
           .update({
             status: 'completed',
             ended_at: new Date().toISOString(),
-            duration_sec: parseInt(callDuration || '0', 10)
+            duration_sec: parseInt(callDuration, 10)
           })
-          .eq('phone_number', formData.get('From') as string)
-          .is('ended_at', null);
+          .eq('twilio_call_sid', callSid);
 
         if (error) {
           console.error('Error updating call record:', error);
