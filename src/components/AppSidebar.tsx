@@ -11,6 +11,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import { LogoutButton } from "./LogoutButton";
 
 const menuItems: Array<{
   title: string;
@@ -77,6 +78,9 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+      </SidebarContent>
+      <SidebarContent className="border-t p-4">
+        <LogoutButton />
       </SidebarContent>
     </Sidebar>
   );

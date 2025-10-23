@@ -14,9 +14,123 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_configurations: {
+        Row: {
+          business_context: string | null
+          created_at: string
+          customer_id: string
+          faqs: Json | null
+          greeting: string | null
+          id: string
+          memory_settings: Json | null
+          personality: string | null
+          scheduling_rules: Json | null
+          tone: string | null
+          updated_at: string
+        }
+        Insert: {
+          business_context?: string | null
+          created_at?: string
+          customer_id: string
+          faqs?: Json | null
+          greeting?: string | null
+          id?: string
+          memory_settings?: Json | null
+          personality?: string | null
+          scheduling_rules?: Json | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          business_context?: string | null
+          created_at?: string
+          customer_id?: string
+          faqs?: Json | null
+          greeting?: string | null
+          id?: string
+          memory_settings?: Json | null
+          personality?: string | null
+          scheduling_rules?: Json | null
+          tone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_configurations_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bookings: {
+        Row: {
+          appointment_date: string
+          appointment_time: string
+          call_id: string | null
+          created_at: string
+          customer_email: string | null
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          service: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_time: string
+          call_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          service?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_time?: string
+          call_id?: string | null
+          created_at?: string
+          customer_email?: string | null
+          customer_id?: string
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          service?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
           created_at: string
+          customer_id: string | null
           duration_sec: number | null
           ended_at: string | null
           id: string
@@ -31,6 +145,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           duration_sec?: number | null
           ended_at?: string | null
           id?: string
@@ -45,6 +160,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           duration_sec?: number | null
           ended_at?: string | null
           id?: string
@@ -57,17 +173,212 @@ export type Database = {
           twilio_call_sid?: string | null
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "calls_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credits_usage: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          description: string | null
+          id: string
+          usage_type: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id: string
+          description?: string | null
+          id?: string
+          usage_type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          description?: string | null
+          id?: string
+          usage_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credits_usage_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customers: {
+        Row: {
+          business_email: string | null
+          business_name: string
+          business_phone: string | null
+          created_at: string
+          id: string
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          business_email?: string | null
+          business_name: string
+          business_phone?: string | null
+          created_at?: string
+          id?: string
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          business_email?: string | null
+          business_name?: string
+          business_phone?: string | null
+          created_at?: string
+          id?: string
+          settings?: Json | null
+          updated_at?: string
+        }
         Relationships: []
+      }
+      phone_numbers: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          phone_number: string
+          settings: Json | null
+          status: string
+          twilio_sid: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          phone_number: string
+          settings?: Json | null
+          status?: string
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          phone_number?: string
+          settings?: Json | null
+          status?: string
+          twilio_sid?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          customer_id: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          email: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_customer_id: { Args: { _user_id: string }; Returns: string }
+      has_customer_role: {
+        Args: {
+          _customer_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "owner" | "admin" | "agent" | "viewer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -194,6 +505,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["owner", "admin", "agent", "viewer"],
+    },
   },
 } as const

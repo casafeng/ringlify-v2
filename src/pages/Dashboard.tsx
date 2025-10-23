@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Phone, Clock, TrendingUp, Smile, Meh, Frown, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCustomer } from "@/contexts/CustomerContext";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 interface Call {
@@ -17,29 +18,35 @@ interface Call {
 }
 
 const Dashboard = () => {
+  const { customerId } = useCustomer();
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchCalls();
+    if (customerId) {
+      fetchCalls();
 
-    // Real-time subscription
-    const channel = supabase
-      .channel('dashboard-calls')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => {
-        fetchCalls();
-      })
-      .subscribe();
+      // Real-time subscription
+      const channel = supabase
+        .channel('dashboard-calls')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => {
+          fetchCalls();
+        })
+        .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [customerId]);
 
   const fetchCalls = async () => {
+    if (!customerId) return;
+    
     const { data, error } = await supabase
       .from('calls')
       .select('*')
+      .eq('customer_id', customerId)
       .order('started_at', { ascending: false });
 
     if (!error && data) {
