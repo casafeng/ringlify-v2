@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import WebSocket from "https://esm.sh/ws@8.18.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -57,22 +58,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let openAISocket: WebSocket | null = null;
+    let openAISocket: any = null;
     let transcriptBuffer = '';
 
     clientSocket.onopen = () => {
       console.log('Client WebSocket connected');
 
-      // Connect to OpenAI Realtime API
-      openAISocket = new WebSocket(
-        'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01',
-        {
-          headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'OpenAI-Beta': 'realtime=v1',
-          }
+      // Connect to OpenAI Realtime API with proper headers using ws library
+      const wsUrl = 'wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01';
+      
+      console.log('Connecting to OpenAI Realtime API...');
+      
+      openAISocket = new WebSocket(wsUrl, {
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'OpenAI-Beta': 'realtime=v1',
         }
-      );
+      });
 
       openAISocket.onopen = () => {
         console.log('OpenAI WebSocket connected');
@@ -130,7 +132,7 @@ Make every conversation fast, natural, and helpful. Show that Ringlfy brings hum
         }));
       };
 
-      openAISocket.onmessage = (event) => {
+      openAISocket.onmessage = (event: any) => {
         const data = JSON.parse(event.data);
         console.log('OpenAI event:', data.type);
 
@@ -170,7 +172,7 @@ Make every conversation fast, natural, and helpful. Show that Ringlfy brings hum
         }
       };
 
-      openAISocket.onerror = (error) => {
+      openAISocket.onerror = (error: any) => {
         console.error('OpenAI WebSocket error:', error);
       };
 
