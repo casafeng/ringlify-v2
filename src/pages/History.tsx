@@ -46,7 +46,7 @@ const formatTimestamp = (timestamp: string) => {
   return new Date(timestamp).toLocaleString();
 };
 
-const Calls = () => {
+const History = () => {
   const [calls, setCalls] = useState<Call[]>([]);
   const [selectedCall, setSelectedCall] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -218,4 +218,4 @@ const Calls = () => {
   );
 };
 
-export default Calls;
+export default History;

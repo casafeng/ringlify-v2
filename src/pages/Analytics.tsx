@@ -25,12 +25,12 @@ const responseTimeData = [
   { hour: "5 PM", avgTime: 16 },
 ];
 
-const Performance = () => {
+const Analytics = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Performance</h1>
+          <h1 className="text-3xl font-bold mb-2">Analytics</h1>
           <p className="text-muted-foreground">
             Track your AI receptionist's key metrics
           </p>
@@ -219,4 +219,4 @@ const Performance = () => {
   );
 };
 
-export default Performance;
+export default Analytics;

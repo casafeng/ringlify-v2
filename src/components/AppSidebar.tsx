@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Phone, Bell, Users, Megaphone, MessageSquare, Tag, TrendingUp, CreditCard, HelpCircle, Settings } from "lucide-react";
+import { LayoutDashboard, History, Palette, Calendar, Coins, CreditCard, TrendingUp, HelpCircle, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -12,17 +12,19 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 
-const menuItems = [
-  { title: "Home", url: "/", icon: Home },
+const menuItems: Array<{
+  title: string;
+  url: string;
+  icon: any;
+  badge?: number;
+}> = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Calls", url: "/calls", icon: Phone },
-  { title: "Notifications", url: "/notifications", icon: Bell, badge: 3 },
-  { title: "Audience", url: "/audience", icon: Users },
-  { title: "Campaigns", url: "/campaigns", icon: Megaphone },
-  { title: "Messages", url: "/messages", icon: MessageSquare, badge: 5 },
-  { title: "Discounts", url: "/discounts", icon: Tag },
-  { title: "Performance", url: "/performance", icon: TrendingUp },
+  { title: "History", url: "/history", icon: History },
+  { title: "Customization", url: "/customization", icon: Palette },
+  { title: "Calendar", url: "/calendar", icon: Calendar },
+  { title: "Credits", url: "/credits", icon: Coins },
   { title: "Billing", url: "/billing", icon: CreditCard },
+  { title: "Analytics", url: "/analytics", icon: TrendingUp },
   { title: "Help", url: "/help", icon: HelpCircle },
   { title: "Settings", url: "/settings", icon: Settings },
 ];
