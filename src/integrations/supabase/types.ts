@@ -26,6 +26,7 @@ export type Database = {
           started_at: string
           status: string
           transcript: string | null
+          twilio_call_sid: string | null
           updated_at: string
         }
         Insert: {
@@ -39,6 +40,7 @@ export type Database = {
           started_at?: string
           status?: string
           transcript?: string | null
+          twilio_call_sid?: string | null
           updated_at?: string
         }
         Update: {
@@ -52,6 +54,7 @@ export type Database = {
           started_at?: string
           status?: string
           transcript?: string | null
+          twilio_call_sid?: string | null
           updated_at?: string
         }
         Relationships: []
