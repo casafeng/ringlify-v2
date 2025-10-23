@@ -35,14 +35,14 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar className={isCollapsed ? "w-16" : "w-64"} collapsible="icon">
-      <SidebarContent>
-        <div className="p-4">
-          <h1 className={`font-bold text-xl text-primary transition-opacity ${isCollapsed ? "opacity-0" : "opacity-100"}`}>
-            Ringlify
-          </h1>
-        </div>
-        
+    <Sidebar className={`${isCollapsed ? "w-16" : "w-64"} flex flex-col`} collapsible="icon">
+      <div className="p-4 border-b">
+        <h1 className={`font-bold text-xl text-primary transition-opacity ${isCollapsed ? "opacity-0" : "opacity-100"}`}>
+          Ringlify
+        </h1>
+      </div>
+      
+      <SidebarContent className="flex-1 overflow-y-auto">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -79,9 +79,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarContent className="border-t p-4">
+      
+      <div className="border-t p-4 mt-auto">
         <LogoutButton />
-      </SidebarContent>
+      </div>
     </Sidebar>
   );
 }
