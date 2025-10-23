@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Bell, Users, Megaphone, MessageSquare, Tag, TrendingUp, CreditCard, HelpCircle, Settings } from "lucide-react";
+import { Home, LayoutDashboard, Phone, Bell, Users, Megaphone, MessageSquare, Tag, TrendingUp, CreditCard, HelpCircle, Settings } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 const menuItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Calls", url: "/calls", icon: Phone },
   { title: "Notifications", url: "/notifications", icon: Bell, badge: 3 },
   { title: "Audience", url: "/audience", icon: Users },
   { title: "Campaigns", url: "/campaigns", icon: Megaphone },
