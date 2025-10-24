@@ -127,8 +127,86 @@ export type Database = {
           },
         ]
       }
+      business_hours: {
+        Row: {
+          created_at: string
+          customer_id: string
+          id: string
+          schedule: Json
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          id?: string
+          schedule?: Json
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          id?: string
+          schedule?: Json
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_events: {
+        Row: {
+          call_id: string
+          created_at: string
+          customer_id: string
+          event_data: Json | null
+          event_type: string
+          id: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          customer_id: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          customer_id?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_events_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_events_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       calls: {
         Row: {
+          conversation_id: string | null
           created_at: string
           customer_id: string | null
           duration_sec: number | null
@@ -144,6 +222,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          conversation_id?: string | null
           created_at?: string
           customer_id?: string | null
           duration_sec?: number | null
@@ -159,6 +238,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          conversation_id?: string | null
           created_at?: string
           customer_id?: string | null
           duration_sec?: number | null
@@ -175,7 +255,106 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "calls_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "calls_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          created_at: string
+          customer_id: string
+          email: string | null
+          id: string
+          metadata: Json | null
+          name: string | null
+          phone_number: string | null
+          updated_at: string
+          whatsapp_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          phone_number?: string | null
+          updated_at?: string
+          whatsapp_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          email?: string | null
+          id?: string
+          metadata?: Json | null
+          name?: string | null
+          phone_number?: string | null
+          updated_at?: string
+          whatsapp_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          channel: string
+          contact_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          metadata: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          channel: string
+          contact_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          contact_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
@@ -247,6 +426,98 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      kb_documents: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          customer_id: string
+          id: string
+          is_active: boolean
+          metadata: Json | null
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kb_documents_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          customer_id: string
+          id: string
+          metadata: Json | null
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          customer_id: string
+          id?: string
+          metadata?: Json | null
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          customer_id?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       phone_numbers: {
         Row: {
@@ -323,6 +594,98 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          currency: string | null
+          customer_id: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          metadata: Json | null
+          name: string
+          price: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string | null
+          customer_id: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          name: string
+          price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string | null
+          customer_id?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          metadata?: Json | null
+          name?: string
+          price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcripts: {
+        Row: {
+          call_id: string
+          created_at: string
+          customer_id: string
+          full_text: string | null
+          id: string
+          segments: Json | null
+        }
+        Insert: {
+          call_id: string
+          created_at?: string
+          customer_id: string
+          full_text?: string | null
+          id?: string
+          segments?: Json | null
+        }
+        Update: {
+          call_id?: string
+          created_at?: string
+          customer_id?: string
+          full_text?: string | null
+          id?: string
+          segments?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcripts_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transcripts_customer_id_fkey"
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
