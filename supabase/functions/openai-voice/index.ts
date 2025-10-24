@@ -58,25 +58,82 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Load customer AI configuration
+    // Build comprehensive business context for AI
     let aiConfig: any = null;
+    let businessHours: any = null;
+    let services: any[] = [];
+    let kbDocuments: any[] = [];
+    let conversationId: string | null = null;
+
     if (customerId) {
-      const { data, error } = await supabase
+      // Load AI configuration
+      const { data: configData, error: configError } = await supabase
         .from('ai_configurations')
         .select('*')
         .eq('customer_id', customerId)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error loading AI config:', error);
+      if (configError) {
+        console.error('Error loading AI config:', configError);
       } else {
-        aiConfig = data;
+        aiConfig = configData;
         console.log('Loaded AI config for customer:', customerId);
+      }
+
+      // Load business hours
+      const { data: hoursData, error: hoursError } = await supabase
+        .from('business_hours')
+        .select('*')
+        .eq('customer_id', customerId)
+        .maybeSingle();
+
+      if (!hoursError && hoursData) {
+        businessHours = hoursData;
+        console.log('Loaded business hours');
+      }
+
+      // Load services
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('customer_id', customerId)
+        .eq('is_active', true);
+
+      if (!servicesError && servicesData) {
+        services = servicesData;
+        console.log('Loaded', services.length, 'services');
+      }
+
+      // Load KB documents
+      const { data: kbData, error: kbError } = await supabase
+        .from('kb_documents')
+        .select('title, content, category')
+        .eq('customer_id', customerId)
+        .eq('is_active', true)
+        .limit(10);
+
+      if (!kbError && kbData) {
+        kbDocuments = kbData;
+        console.log('Loaded', kbDocuments.length, 'KB documents');
+      }
+
+      // Get conversation ID for this call
+      if (callId) {
+        const { data: callData } = await supabase
+          .from('calls')
+          .select('conversation_id')
+          .eq('id', callId)
+          .maybeSingle();
+        
+        if (callData?.conversation_id) {
+          conversationId = callData.conversation_id;
+        }
       }
     }
 
     let openAISocket: WebSocket | null = null;
     let transcriptBuffer = '';
+    let conversationMessages: Array<{role: string, content: string}> = [];
 
     clientSocket.onopen = () => {
       console.log('Client WebSocket connected');
@@ -90,13 +147,40 @@ serve(async (req) => {
       openAISocket.addEventListener('open', () => {
         console.log('OpenAI WebSocket connected');
         
-        // Build dynamic instructions from customer AI configuration
+        // Build comprehensive dynamic instructions with full business context
         const personality = aiConfig?.personality || 'professional and friendly';
         const tone = aiConfig?.tone || 'warm';
         const greeting = aiConfig?.greeting || 'Hello! How can I help you today?';
-        const businessContext = aiConfig?.business_context || 'You are an AI assistant helping a business.';
+        const businessContext = aiConfig?.business_context || 'You are an AI receptionist helping a business.';
         const faqs = aiConfig?.faqs || [];
-        const schedulingRules = aiConfig?.scheduling_rules || {};
+
+        // Build business hours section
+        let hoursSection = '';
+        if (businessHours?.schedule) {
+          const schedule = businessHours.schedule;
+          const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+          const scheduleText = days
+            .map(day => {
+              const daySchedule = schedule[day];
+              if (daySchedule?.enabled) {
+                return `${day.charAt(0).toUpperCase() + day.slice(1)}: ${daySchedule.open} - ${daySchedule.close}`;
+              }
+              return `${day.charAt(0).toUpperCase() + day.slice(1)}: Closed`;
+            })
+            .join('\n');
+          hoursSection = `\n\nBUSINESS HOURS (${businessHours.timezone}):\n${scheduleText}`;
+        }
+
+        // Build services section
+        let servicesSection = '';
+        if (services.length > 0) {
+          servicesSection = '\n\nAVAILABLE SERVICES:\n' +
+            services.map((service: any) => 
+              `• ${service.name}${service.description ? ': ' + service.description : ''}` +
+              `${service.duration_minutes ? ` (${service.duration_minutes} min)` : ''}` +
+              `${service.price ? ` - $${service.price}` : ''}`
+            ).join('\n');
+        }
 
         // Build FAQ section
         let faqSection = '';
@@ -105,13 +189,13 @@ serve(async (req) => {
             faqs.map((faq: any) => `Q: ${faq.question}\nA: ${faq.answer}`).join('\n\n');
         }
 
-        // Build scheduling section
-        let schedulingSection = '';
-        if (schedulingRules && Object.keys(schedulingRules).length > 0) {
-          schedulingSection = '\n\nSCHEDULING RULES:\n' +
-            `Business Hours: ${schedulingRules.business_hours || 'Not specified'}\n` +
-            `Booking Duration: ${schedulingRules.booking_duration || 'Not specified'}\n` +
-            `Advance Notice: ${schedulingRules.advance_notice || 'Not specified'}`;
+        // Build knowledge base section
+        let kbSection = '';
+        if (kbDocuments.length > 0) {
+          kbSection = '\n\nKNOWLEDGE BASE:\n' +
+            kbDocuments.map((doc: any) => 
+              `[${doc.category || 'General'}] ${doc.title}:\n${doc.content.slice(0, 300)}${doc.content.length > 300 ? '...' : ''}`
+            ).join('\n\n');
         }
 
         const instructions = `${businessContext}
@@ -126,20 +210,34 @@ COMMUNICATION STYLE:
 - Sound human and empathetic, never robotic or overly formal
 - Avoid long explanations or excessive apologizing
 
+DATA ACCURACY RULES:
+- ONLY use information from the verified business data sections below
+- If asked about something not in the provided data, say: "Let me confirm that with the business and get back to you"
+- Never make up prices, hours, services, or policies
+- If the knowledge base doesn't cover a question, offer to have someone from the business follow up
+${hoursSection}
+${servicesSection}
+${faqSection}
+${kbSection}
+
+SCHEDULING GUIDELINES:
+- Check business hours before booking appointments
+- Confirm service selection and duration
+- Verify contact information (phone and/or email)
+- Provide clear confirmation of date, time, and service
+
 CORE BEHAVIOR:
 1. Listen and understand the full request
 2. Clarify if ambiguous: "Just to confirm, are you asking about...?"
-3. Respond naturally in one or two spoken sentences
+3. Respond using ONLY verified business data above
 4. Take action when possible (schedule, log, confirm)
-5. Close gracefully: "Glad to help today — talk soon!"
-${faqSection}
-${schedulingSection}
+5. Close gracefully: "Thanks for calling — have a great day!"
 
 FALLBACK:
-If you cannot understand or fulfill a request, clarify once. If still unclear: "I might need to pass this to our team so they can assist further. Can I take your contact info?"
+If you cannot answer using the verified data above: "That's a great question — let me have someone from the business reach out with the details. Can I get your contact info?"
 
 MISSION:
-Make every conversation fast, natural, and helpful. Every caller should feel heard, understood, and helped.`;
+Deliver accurate, helpful information using only verified business data. Make every caller feel heard and helped.`;
 
         console.log('Using AI instructions for customer:', customerId);
 
@@ -181,9 +279,23 @@ Make every conversation fast, natural, and helpful. Every caller should feel hea
           }));
         }
 
-        // Collect transcript
+        // Collect transcript and save messages
         if (data.type === 'conversation.item.input_audio_transcription.completed') {
-          transcriptBuffer += `User: ${data.transcript}\n`;
+          const userMessage = `User: ${data.transcript}\n`;
+          transcriptBuffer += userMessage;
+          conversationMessages.push({ role: 'user', content: data.transcript });
+
+          // Save user message to database
+          if (customerId && conversationId) {
+            supabase.from('messages').insert({
+              customer_id: customerId,
+              conversation_id: conversationId,
+              role: 'user',
+              content: data.transcript
+            }).then(({ error }) => {
+              if (error) console.error('Error saving user message:', error);
+            });
+          }
         }
 
         if (data.type === 'response.audio_transcript.delta') {
@@ -193,7 +305,21 @@ Make every conversation fast, natural, and helpful. Every caller should feel hea
         }
 
         if (data.type === 'response.audio_transcript.done') {
-          transcriptBuffer += `\nAI: ${data.transcript}\n`;
+          const aiMessage = `\nAI: ${data.transcript}\n`;
+          transcriptBuffer += aiMessage;
+          conversationMessages.push({ role: 'assistant', content: data.transcript });
+
+          // Save AI message to database
+          if (customerId && conversationId) {
+            supabase.from('messages').insert({
+              customer_id: customerId,
+              conversation_id: conversationId,
+              role: 'assistant',
+              content: data.transcript
+            }).then(({ error }) => {
+              if (error) console.error('Error saving AI message:', error);
+            });
+          }
         }
 
         // Handle session created
@@ -271,7 +397,7 @@ Respond in JSON format: {"sentiment": "...", "intent": "..."}`
             
             console.log('Call analysis:', analysis);
 
-            // Save transcript, sentiment, and intent to database
+            // Save transcript, sentiment, and intent to calls table
             const { error } = await supabase
               .from('calls')
               .update({ 
@@ -285,6 +411,24 @@ Respond in JSON format: {"sentiment": "...", "intent": "..."}`
               console.error('Error saving call data:', error);
             } else {
               console.log('Call data saved for call:', callId);
+            }
+
+            // Save structured transcript to transcripts table
+            if (customerId) {
+              const { error: transcriptError } = await supabase
+                .from('transcripts')
+                .insert({
+                  customer_id: customerId,
+                  call_id: callId,
+                  full_text: transcriptBuffer,
+                  segments: conversationMessages
+                });
+
+              if (transcriptError) {
+                console.error('Error saving transcript:', transcriptError);
+              } else {
+                console.log('Structured transcript saved');
+              }
             }
           } catch (error) {
             console.error('Error analyzing call:', error);

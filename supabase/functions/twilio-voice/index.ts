@@ -42,8 +42,9 @@ serve(async (req) => {
       const from = params.get('From') || '';
       const callSid = params.get('CallSid') || '';
       const to = params.get('To') || '';
+      const callStatus = params.get('CallStatus') || 'initiated';
 
-      console.log('Call details - From:', from, 'To:', to, 'CallSid:', callSid);
+      console.log('Call details - From:', from, 'To:', to, 'CallSid:', callSid, 'Status:', callStatus);
 
       // Look up customer_id from phone_numbers table using the To number
       const { data: phoneNumber, error: phoneError } = await supabase
@@ -59,6 +60,52 @@ serve(async (req) => {
       const customerId = phoneNumber?.customer_id;
       console.log('Customer ID for phone number:', customerId);
 
+      // Create or get contact
+      let contactId = null;
+      if (customerId) {
+        const { data: contact, error: contactError } = await supabase
+          .from('contacts')
+          .upsert({
+            customer_id: customerId,
+            phone_number: from,
+            name: from, // Will be updated by AI if it learns the name
+          }, {
+            onConflict: 'customer_id,phone_number',
+            ignoreDuplicates: false
+          })
+          .select()
+          .single();
+
+        if (contactError) {
+          console.error('Error creating contact:', contactError);
+        } else {
+          contactId = contact.id;
+          console.log('Contact ID:', contactId);
+        }
+      }
+
+      // Create conversation
+      let conversationId = null;
+      if (customerId && contactId) {
+        const { data: conversation, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            customer_id: customerId,
+            contact_id: contactId,
+            channel: 'voice',
+            status: 'active'
+          })
+          .select()
+          .single();
+
+        if (convError) {
+          console.error('Error creating conversation:', convError);
+        } else {
+          conversationId = conversation.id;
+          console.log('Conversation ID:', conversationId);
+        }
+      }
+
       // Create call record in database
       const { data: call, error } = await supabase
         .from('calls')
@@ -66,7 +113,8 @@ serve(async (req) => {
           phone_number: from,
           twilio_call_sid: callSid,
           status: 'in-progress',
-          customer_id: customerId
+          customer_id: customerId,
+          conversation_id: conversationId
         })
         .select()
         .single();
@@ -75,6 +123,21 @@ serve(async (req) => {
         console.error('Error creating call record:', error);
       } else {
         console.log('Call record created:', call.id);
+      }
+
+      // Log call event
+      if (customerId && call?.id) {
+        await supabase.from('call_events').insert({
+          customer_id: customerId,
+          call_id: call.id,
+          event_type: callStatus,
+          event_data: {
+            from,
+            to,
+            callSid,
+            timestamp: new Date().toISOString()
+          }
+        });
       }
 
       // Build WebSocket URL for OpenAI edge function
@@ -124,6 +187,27 @@ serve(async (req) => {
 
       console.log('Status update - CallSid:', callSid, 'Status:', callStatus, 'Duration:', callDuration);
 
+      // Get call info for logging events
+      const { data: call } = await supabase
+        .from('calls')
+        .select('id, customer_id, conversation_id')
+        .eq('twilio_call_sid', callSid)
+        .maybeSingle();
+
+      // Log call event
+      if (call?.customer_id && call?.id) {
+        await supabase.from('call_events').insert({
+          customer_id: call.customer_id,
+          call_id: call.id,
+          event_type: callStatus,
+          event_data: {
+            callSid,
+            callDuration,
+            timestamp: new Date().toISOString()
+          }
+        });
+      }
+
       // Update call record when call ends
       if (callStatus === 'completed') {
         const { error } = await supabase
@@ -139,6 +223,14 @@ serve(async (req) => {
           console.error('Error updating call record:', error);
         } else {
           console.log('Call record updated to completed');
+        }
+
+        // Close conversation
+        if (call?.conversation_id) {
+          await supabase
+            .from('conversations')
+            .update({ status: 'closed' })
+            .eq('id', call.conversation_id);
         }
       }
 
