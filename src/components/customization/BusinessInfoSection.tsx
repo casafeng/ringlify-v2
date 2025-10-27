@@ -1,82 +1,62 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const serviceTypes = [
+  { value: "dental", label: "Dental Services" },
+  { value: "medical", label: "Medical Practice" },
+  { value: "legal", label: "Legal Services" },
+  { value: "salon", label: "Salon & Beauty" },
+  { value: "consulting", label: "Consulting" },
+  { value: "restaurant", label: "Restaurant" },
+  { value: "retail", label: "Retail Store" },
+  { value: "other", label: "Other" },
+];
 
 interface BusinessInfoSectionProps {
-  defaultBusinessName?: string;
-  defaultServiceType?: string;
-  defaultContext?: string;
-  onSave: (data: { businessName: string; serviceType: string; context: string }) => void;
+  businessName: string;
+  serviceType: string;
+  onChange: (data: { businessName?: string; serviceType?: string }) => void;
 }
 
 export const BusinessInfoSection = ({
-  defaultBusinessName = "",
-  defaultServiceType = "",
-  defaultContext = "",
-  onSave,
+  businessName,
+  serviceType,
+  onChange,
 }: BusinessInfoSectionProps) => {
-  const [businessName, setBusinessName] = useState(defaultBusinessName);
-  const [serviceType, setServiceType] = useState(defaultServiceType);
-  const [context, setContext] = useState(defaultContext);
-
-  const handleSave = () => {
-    onSave({
-      businessName,
-      serviceType,
-      context,
-    });
-  };
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Business Info</CardTitle>
-        <CardDescription>
-          Help your assistant understand your business
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="business-name">Business Name</Label>
-          <Input
-            id="business-name"
-            placeholder="e.g., Sunrise Dental Clinic"
-            value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
-          />
-        </div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor="business-name">Business Name</Label>
+        <Input
+          id="business-name"
+          value={businessName}
+          onChange={(e) => onChange({ businessName: e.target.value })}
+          placeholder="e.g., Sunrise Dental"
+        />
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="service-type">What Do You Do?</Label>
-          <Input
-            id="service-type"
-            placeholder="e.g., Dental services, Hair salon, Law firm"
-            value={serviceType}
-            onChange={(e) => setServiceType(e.target.value)}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="context">Key Business Information</Label>
-          <Textarea
-            id="context"
-            placeholder="Tell your assistant about your business: services offered, pricing, location, special policies..."
-            value={context}
-            onChange={(e) => setContext(e.target.value)}
-            rows={6}
-          />
-          <p className="text-xs text-muted-foreground">
-            Include anything your assistant should know when talking to customers
-          </p>
-        </div>
-
-        <Button onClick={handleSave} size="lg">
-          Save Changes
-        </Button>
-      </CardContent>
-    </Card>
+      <div className="space-y-2">
+        <Label htmlFor="service-type">What do you do?</Label>
+        <Select value={serviceType} onValueChange={(value) => onChange({ serviceType: value })}>
+          <SelectTrigger id="service-type">
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            {serviceTypes.map((type) => (
+              <SelectItem key={type.value} value={type.value}>
+                {type.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 };
