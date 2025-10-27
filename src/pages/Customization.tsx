@@ -7,18 +7,10 @@ import { SaveIndicator } from "@/components/customization/SaveIndicator";
 import { useAIConfiguration } from "@/hooks/useAIConfiguration";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Separator } from "@/components/ui/separator";
 
 const Customization = () => {
   const { config, isLoading, updateConfig } = useAIConfiguration();
-  const [isCapabilitiesOpen, setIsCapabilitiesOpen] = useState(false);
-  const [isKnowledgeOpen, setIsKnowledgeOpen] = useState(false);
 
   const { triggerSave, isSaving, lastSaved } = useAutoSave((data: any) => {
     updateConfig.mutate(data);
@@ -65,91 +57,90 @@ const Customization = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl space-y-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">AI Customization</h1>
-            <p className="text-muted-foreground">
-              Make your assistant act, speak, and think the way you want
-            </p>
+      <div className="space-y-8 pb-16">
+        {/* Sticky Header */}
+        <div className="sticky top-16 z-10 -mx-6 -mt-6 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b px-6 py-4">
+          <div className="flex items-center justify-between max-w-7xl">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">AI Customization</h1>
+              <p className="text-muted-foreground mt-1">
+                Configure how your AI assistant behaves and responds
+              </p>
+            </div>
+            <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
           </div>
-          <SaveIndicator isSaving={isSaving} lastSaved={lastSaved} />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>The Basics</CardTitle>
-            <CardDescription>Essential information about your business</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <BusinessInfoSection
-              businessName={businessName}
-              serviceType={serviceType}
-              onChange={handleBusinessChange}
-            />
-            
-            <div className="pt-2 border-t">
-              <TonePersonalitySection
-                tone={config?.tone || "professional"}
-                greeting={config?.greeting || ""}
-                onChange={handleChange}
-              />
+        <div className="max-w-7xl space-y-8">
+          {/* Business Information Section */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Business Information</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Essential details about your business
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Collapsible open={isCapabilitiesOpen} onOpenChange={setIsCapabilitiesOpen}>
-          <Card>
-            <CardHeader className="cursor-pointer" onClick={() => setIsCapabilitiesOpen(!isCapabilitiesOpen)}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full">
-                <div className="text-left">
-                  <CardTitle>What Can It Do?</CardTitle>
-                  <CardDescription>
-                    {Object.values(capabilities).filter(Boolean).length} capabilities enabled
-                  </CardDescription>
-                </div>
-                <ChevronDown
-                  className={`h-5 w-5 transition-transform ${
-                    isCapabilitiesOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </CollapsibleTrigger>
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent>
-                <CapabilitiesSection
-                  enabledCapabilities={capabilities}
-                  onChange={handleCapabilitiesChange}
+            <Card>
+              <CardContent className="pt-6">
+                <BusinessInfoSection
+                  businessName={businessName}
+                  serviceType={serviceType}
+                  onChange={handleBusinessChange}
                 />
               </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+            </Card>
+          </section>
 
-        <Collapsible open={isKnowledgeOpen} onOpenChange={setIsKnowledgeOpen}>
-          <Card>
-            <CardHeader className="cursor-pointer" onClick={() => setIsKnowledgeOpen(!isKnowledgeOpen)}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full">
-                <div className="text-left">
-                  <CardTitle>Knowledge Base</CardTitle>
-                  <CardDescription>
-                    Add documents and information for your assistant
-                  </CardDescription>
-                </div>
-                <ChevronDown
-                  className={`h-5 w-5 transition-transform ${
-                    isKnowledgeOpen ? "rotate-180" : ""
-                  }`}
+          <Separator />
+
+          {/* Tone & Personality Section */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Tone & Personality</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Define how your assistant communicates
+              </p>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <TonePersonalitySection
+                  tone={config?.tone || "professional"}
+                  greeting={config?.greeting || ""}
+                  onChange={handleChange}
                 />
-              </CollapsibleTrigger>
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent>
-                <KnowledgeBaseManager />
               </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
+            </Card>
+          </section>
+
+          <Separator />
+
+          {/* Capabilities Section */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Capabilities</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {Object.values(capabilities).filter(Boolean).length} of {Object.keys(capabilities).length} features enabled
+              </p>
+            </div>
+            <CapabilitiesSection
+              enabledCapabilities={capabilities}
+              onChange={handleCapabilitiesChange}
+            />
+          </section>
+
+          <Separator />
+
+          {/* Knowledge Base Section */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Knowledge Base</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Add information for your assistant to reference
+              </p>
+            </div>
+            <KnowledgeBaseManager />
+          </section>
+        </div>
       </div>
     </DashboardLayout>
   );

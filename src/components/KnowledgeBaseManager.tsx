@@ -35,93 +35,100 @@ export const KnowledgeBaseManager = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            {documents.length} {documents.length === 1 ? 'source' : 'sources'} added
-          </p>
-        </div>
-        <Button onClick={() => setIsDialogOpen(true)} size="sm">
-          <Plus className="w-4 h-4 mr-2" />
-          Add
-        </Button>
-      </div>
-
       <AddKnowledgeDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Knowledge Sources</CardTitle>
-          <CardDescription>
-            Manage the information your AI assistant can access
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {documents.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg mb-2">No sources yet</p>
-              <p className="text-sm">Add your first knowledge source to get started</p>
+      {documents.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="rounded-full bg-muted p-4 mb-4">
+              <FileText className="w-8 h-8 text-muted-foreground" />
             </div>
-          ) : (
-            <div className="space-y-3">
-              {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      {getSourceIcon(doc.source_type)}
-                      <h3 className="font-semibold">{doc.title}</h3>
-                      {doc.source_type && (
-                        <Badge variant="secondary" className="text-xs capitalize">
-                          {doc.source_type}
-                        </Badge>
-                      )}
-                      {!doc.is_active && (
-                        <Badge variant="outline" className="text-xs">
-                          Inactive
-                        </Badge>
-                      )}
+            <h3 className="text-lg font-semibold mb-2">No knowledge sources yet</h3>
+            <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
+              Add documents, websites, or text to help your assistant provide better answers
+            </p>
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Source
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {documents.length} {documents.length === 1 ? 'source' : 'sources'} • {documents.filter(d => d.is_active).length} active
+            </p>
+            <Button onClick={() => setIsDialogOpen(true)} size="sm">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Source
+            </Button>
+          </div>
+
+          <div className="grid gap-4">
+            {documents.map((doc) => (
+              <Card key={doc.id} className="group hover:shadow-md transition-all">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex gap-4 flex-1 min-w-0">
+                      <div className="rounded-lg bg-muted p-2.5 h-fit">
+                        {getSourceIcon(doc.source_type)}
+                      </div>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-base">{doc.title}</h3>
+                          {doc.source_type && (
+                            <Badge variant="secondary" className="text-xs capitalize">
+                              {doc.source_type}
+                            </Badge>
+                          )}
+                          {!doc.is_active && (
+                            <Badge variant="outline" className="text-xs">
+                              Inactive
+                            </Badge>
+                          )}
+                        </div>
+                        {doc.source_url && doc.source_type === 'website' && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {doc.source_url}
+                          </p>
+                        )}
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {doc.content}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Last updated {new Date(doc.updated_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    {doc.source_url && doc.source_type === 'website' && (
-                      <p className="text-xs text-muted-foreground">
-                        {doc.source_url}
-                      </p>
-                    )}
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {doc.content}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Last updated: {new Date(doc.updated_at).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={doc.is_active}
-                        onCheckedChange={() => handleToggleActive(doc)}
-                      />
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Active</span>
+                        <Switch
+                          checked={doc.is_active}
+                          onCheckedChange={() => handleToggleActive(doc)}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          if (confirm("Are you sure you want to delete this source?")) {
+                            deleteDocument.mutate(doc.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (confirm("Are you sure you want to delete this source?")) {
-                          deleteDocument.mutate(doc.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };

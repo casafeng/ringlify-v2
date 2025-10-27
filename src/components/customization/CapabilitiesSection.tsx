@@ -52,30 +52,42 @@ export const CapabilitiesSection = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="grid gap-4 md:grid-cols-2">
       {capabilities.map((capability) => {
         const Icon = capability.icon;
+        const isEnabled = enabledCapabilities[capability.id] || false;
         return (
           <div
             key={capability.id}
-            className="flex items-start justify-between gap-4 rounded-lg border p-4"
+            className={`group relative rounded-lg border-2 p-5 transition-all ${
+              isEnabled
+                ? "border-primary bg-primary/5"
+                : "border-border bg-card hover:border-muted-foreground/20"
+            }`}
           >
-            <div className="flex gap-3 flex-1">
-              <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="space-y-1">
-                <Label htmlFor={capability.id} className="cursor-pointer font-medium">
-                  {capability.label}
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {capability.description}
-                </p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex gap-4 flex-1">
+                <div className={`rounded-lg p-2 ${isEnabled ? "bg-primary/10" : "bg-muted"}`}>
+                  <Icon className={`h-5 w-5 ${isEnabled ? "text-primary" : "text-muted-foreground"}`} />
+                </div>
+                <div className="space-y-1.5 flex-1">
+                  <Label
+                    htmlFor={capability.id}
+                    className="cursor-pointer font-semibold text-base leading-tight"
+                  >
+                    {capability.label}
+                  </Label>
+                  <p className="text-sm text-muted-foreground leading-snug">
+                    {capability.description}
+                  </p>
+                </div>
               </div>
+              <Switch
+                id={capability.id}
+                checked={isEnabled}
+                onCheckedChange={() => handleToggle(capability.id)}
+              />
             </div>
-            <Switch
-              id={capability.id}
-              checked={enabledCapabilities[capability.id] || false}
-              onCheckedChange={() => handleToggle(capability.id)}
-            />
           </div>
         );
       })}
