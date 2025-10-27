@@ -64,13 +64,20 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
 
   const fetchCustomerId = async (userId: string) => {
     try {
+      console.log('[Auth] Fetching customer_id for user:', userId);
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('customer_id')
         .eq('user_id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Auth] Error fetching customer_id:', error);
+        throw error;
+      }
+      
+      console.log('[Auth] Customer ID found:', data?.customer_id);
       setCustomerId(data?.customer_id || null);
     } catch (error) {
       console.error('Error fetching customer_id:', error);

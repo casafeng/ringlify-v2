@@ -25,14 +25,25 @@ export const useKnowledgeBase = () => {
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ["kb_documents", customerId],
     queryFn: async () => {
-      if (!customerId) return [];
+      if (!customerId) {
+        console.log('[KB] No customerId available');
+        return [];
+      }
+      
+      console.log('[KB] Fetching documents for customerId:', customerId);
+      
       const { data, error } = await supabase
         .from("kb_documents")
         .select("*")
         .eq("customer_id", customerId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[KB] Error fetching documents:', error);
+        throw error;
+      }
+      
+      console.log('[KB] Fetched documents:', data?.length || 0);
       return data as KBDocument[];
     },
     enabled: !!customerId,
@@ -47,7 +58,13 @@ export const useKnowledgeBase = () => {
       source_url?: string;
       file_path?: string;
     }) => {
-      if (!customerId) throw new Error("No customer ID");
+      if (!customerId) {
+        console.error('[KB] Cannot create document: No customerId');
+        throw new Error("No customer ID");
+      }
+      
+      console.log('[KB] Creating document with customerId:', customerId);
+      
       const { data, error } = await supabase
         .from("kb_documents")
         .insert({
@@ -58,7 +75,12 @@ export const useKnowledgeBase = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[KB] Error creating document:', error);
+        throw error;
+      }
+      
+      console.log('[KB] Document created successfully:', data?.id);
       return data;
     },
     onSuccess: () => {
