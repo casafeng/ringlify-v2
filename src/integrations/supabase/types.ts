@@ -433,9 +433,12 @@ export type Database = {
           content: string
           created_at: string
           customer_id: string
+          file_path: string | null
           id: string
           is_active: boolean
           metadata: Json | null
+          source_type: string | null
+          source_url: string | null
           title: string
           updated_at: string
           version: number
@@ -445,9 +448,12 @@ export type Database = {
           content: string
           created_at?: string
           customer_id: string
+          file_path?: string | null
           id?: string
           is_active?: boolean
           metadata?: Json | null
+          source_type?: string | null
+          source_url?: string | null
           title: string
           updated_at?: string
           version?: number
@@ -457,9 +463,12 @@ export type Database = {
           content?: string
           created_at?: string
           customer_id?: string
+          file_path?: string | null
           id?: string
           is_active?: boolean
           metadata?: Json | null
+          source_type?: string | null
+          source_url?: string | null
           title?: string
           updated_at?: string
           version?: number

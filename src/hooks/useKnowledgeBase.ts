@@ -13,6 +13,9 @@ export interface KBDocument {
   created_at: string;
   updated_at: string;
   version: number;
+  source_type?: 'text' | 'website' | 'document';
+  source_url?: string;
+  file_path?: string;
 }
 
 export const useKnowledgeBase = () => {
@@ -36,7 +39,14 @@ export const useKnowledgeBase = () => {
   });
 
   const createDocument = useMutation({
-    mutationFn: async (doc: { title: string; content: string; category?: string }) => {
+    mutationFn: async (doc: { 
+      title: string; 
+      content: string; 
+      category?: string;
+      source_type?: 'text' | 'website' | 'document';
+      source_url?: string;
+      file_path?: string;
+    }) => {
       if (!customerId) throw new Error("No customer ID");
       const { data, error } = await supabase
         .from("kb_documents")
