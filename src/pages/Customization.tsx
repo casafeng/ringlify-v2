@@ -4,6 +4,7 @@ import { BusinessInfoSection } from "@/components/customization/BusinessInfoSect
 import { CapabilitiesSection } from "@/components/customization/CapabilitiesSection";
 import { KnowledgeBaseManager } from "@/components/KnowledgeBaseManager";
 import { SaveIndicator } from "@/components/customization/SaveIndicator";
+import { TestChatSection } from "@/components/customization/TestChatSection";
 import { useAIConfiguration } from "@/hooks/useAIConfiguration";
 import { useAutoSave } from "@/hooks/useAutoSave";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -139,6 +140,19 @@ const Customization = () => {
               </p>
             </div>
             <KnowledgeBaseManager />
+          </section>
+
+          <Separator />
+
+          {/* Test Chat Section */}
+          <section className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">Test Your Assistant</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try out how your AI will respond with the current configuration
+              </p>
+            </div>
+            <TestChatSection />
           </section>
         </div>
       </div>
