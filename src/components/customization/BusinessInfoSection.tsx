@@ -1,12 +1,7 @@
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
+import { BusinessInfoDialog } from "./BusinessInfoDialog";
 
 const serviceTypes = [
   { value: "dental", label: "Dental Services" },
@@ -30,33 +25,47 @@ export const BusinessInfoSection = ({
   serviceType,
   onChange,
 }: BusinessInfoSectionProps) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const serviceTypeLabel = serviceTypes.find((t) => t.value === serviceType)?.label || "Not set";
+
+  const handleSave = (data: { businessName: string; serviceType: string }) => {
+    onChange({ businessName: data.businessName, serviceType: data.serviceType });
+  };
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <div className="space-y-2">
-        <Label htmlFor="business-name">Business Name</Label>
-        <Input
-          id="business-name"
-          value={businessName}
-          onChange={(e) => onChange({ businessName: e.target.value })}
-          placeholder="e.g., Sunrise Dental"
-        />
+    <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex-1 space-y-3">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Business Name</p>
+              <p className="font-medium">{businessName || "Not set"}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">Service Type</p>
+              <p className="font-medium">{serviceTypeLabel}</p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setDialogOpen(true)}
+            className="ml-4"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit
+          </Button>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="service-type">What do you do?</Label>
-        <Select value={serviceType} onValueChange={(value) => onChange({ serviceType: value })}>
-          <SelectTrigger id="service-type">
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            {serviceTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+      <BusinessInfoDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        businessName={businessName}
+        serviceType={serviceType}
+        onSave={handleSave}
+      />
+    </>
   );
 };
