@@ -35,24 +35,20 @@ export const DocumentTab = ({ onSuccess }: DocumentTabProps) => {
 
       if (uploadError) throw uploadError;
 
-      // Get file URL
-      const { data: { publicUrl } } = supabase.storage
-        .from("kb-documents")
-        .getPublicUrl(fileName);
-
-      // Extract text from file (simplified - in production, use proper document parsing)
-      const text = await file.text();
-
-      // Create document entry
-      await createDocument.mutateAsync({
-        title: file.name,
-        content: text.substring(0, 10000), // Limit content size
-        category: "Document",
-        source_type: "document",
-        file_path: fileName,
-        source_url: publicUrl,
+      // Call edge function to parse and chunk the document
+      const { data, error: parseError } = await supabase.functions.invoke('parse-document', {
+        body: {
+          filePath: fileName,
+          title: file.name,
+          customerId: customerId,
+        }
       });
 
+      if (parseError) throw parseError;
+
+      const chunksCreated = data?.chunksCreated || 1;
+      toast.success(`Document processed successfully! ${chunksCreated > 1 ? `Split into ${chunksCreated} parts.` : ''}`);
+      
       onSuccess();
       setFile(null);
     } catch (error) {
