@@ -116,7 +116,7 @@ export const KnowledgeBaseManager = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Active</span>
+                        <span className="text-xs text-muted-foreground leading-none">Active</span>
                         <Switch
                           checked={doc.is_active}
                           onCheckedChange={() => handleToggleActive(doc)}
