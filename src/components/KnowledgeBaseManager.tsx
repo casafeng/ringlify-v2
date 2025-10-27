@@ -1,21 +1,34 @@
 import { useState } from "react";
-import { useKnowledgeBase } from "@/hooks/useKnowledgeBase";
+import { useKnowledgeBase, KBDocument } from "@/hooks/useKnowledgeBase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, FileText, Globe, File } from "lucide-react";
+import { Plus, Trash2, FileText, Globe, File, Pencil } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { AddKnowledgeDialog } from "./knowledge/AddKnowledgeDialog";
+import { EditKnowledgeDialog } from "./knowledge/EditKnowledgeDialog";
 
 export const KnowledgeBaseManager = () => {
   const { documents, isLoading, updateDocument, deleteDocument } = useKnowledgeBase();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingDocument, setEditingDocument] = useState<KBDocument | null>(null);
 
   const handleToggleActive = async (doc: any) => {
     await updateDocument.mutateAsync({
       id: doc.id,
       is_active: !doc.is_active,
     });
+  };
+
+  const handleEdit = (id: string, title: string, content: string, category?: string) => {
+    updateDocument.mutate(
+      { id, title, content, category },
+      {
+        onSuccess: () => {
+          setEditingDocument(null);
+        },
+      }
+    );
   };
 
   const getSourceIcon = (sourceType?: string) => {
@@ -109,6 +122,16 @@ export const KnowledgeBaseManager = () => {
                           onCheckedChange={() => handleToggleActive(doc)}
                         />
                       </div>
+                      {doc.source_type === 'text' && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setEditingDocument(doc)}
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"
@@ -128,6 +151,16 @@ export const KnowledgeBaseManager = () => {
             ))}
           </div>
         </>
+      )}
+
+      {editingDocument && (
+        <EditKnowledgeDialog
+          document={editingDocument}
+          open={!!editingDocument}
+          onOpenChange={(open) => !open && setEditingDocument(null)}
+          onSave={handleEdit}
+          isSaving={updateDocument.isPending}
+        />
       )}
     </div>
   );
