@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { KnowledgeBaseManager } from "@/components/KnowledgeBaseManager";
 
 const Customization = () => {
   return (
@@ -20,12 +21,17 @@ const Customization = () => {
 
         <Tabs defaultValue="personality" className="space-y-6">
           <TabsList>
+            <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             <TabsTrigger value="personality">Personality</TabsTrigger>
             <TabsTrigger value="business">Business Context</TabsTrigger>
             <TabsTrigger value="memory">Memory</TabsTrigger>
             <TabsTrigger value="faqs">FAQs</TabsTrigger>
             <TabsTrigger value="scheduling">Scheduling Logic</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="knowledge" className="space-y-4">
+            <KnowledgeBaseManager />
+          </TabsContent>
 
           <TabsContent value="personality" className="space-y-4">
             <Card>
