@@ -32,7 +32,8 @@ const Customization = () => {
   };
 
   const handleCapabilitiesChange = (capabilities: Record<string, boolean>) => {
-    const currentMemory = (config?.memory_settings as Record<string, any>) || {};
+    if (!config) return;
+    const currentMemory = (config.memory_settings as any) || {};
     handleChange({
       memory_settings: {
         ...currentMemory,
@@ -47,6 +48,7 @@ const Customization = () => {
   const serviceType = businessContext.match(/Type: (.*)/)?.[1]?.split("\n")[0] || "";
 
   const handleBusinessChange = (data: { businessName?: string; serviceType?: string }) => {
+    if (!config) return;
     const newBusinessName = data.businessName ?? businessName;
     const newServiceType = data.serviceType ?? serviceType;
     handleChange({

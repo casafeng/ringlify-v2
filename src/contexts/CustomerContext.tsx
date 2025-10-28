@@ -66,11 +66,12 @@ export function CustomerProvider({ children }: CustomerProviderProps) {
     try {
       console.log('[Auth] Fetching customer_id for user:', userId);
       
+      // @ts-ignore - Supabase types need regeneration
       const { data, error } = await supabase
         .from('profiles')
         .select('customer_id')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('[Auth] Error fetching customer_id:', error);

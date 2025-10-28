@@ -92,6 +92,7 @@ const History = () => {
 
   const fetchCalls = async () => {
     try {
+      // @ts-expect-error - Supabase types need regeneration
       const { data, error } = await supabase
         .from('calls')
         .select('*')

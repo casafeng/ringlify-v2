@@ -11,11 +11,12 @@ export const useAIConfiguration = () => {
     queryKey: ["ai_configuration", customerId],
     queryFn: async () => {
       if (!customerId) return null;
+      // @ts-expect-error - Supabase types need regeneration
       const { data, error } = await supabase
         .from("ai_configurations")
         .select("*")
         .eq("customer_id", customerId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -26,6 +27,7 @@ export const useAIConfiguration = () => {
   const updateConfig = useMutation({
     mutationFn: async (updates: Record<string, any>) => {
       if (!customerId) throw new Error("No customer ID");
+      // @ts-expect-error - Supabase types need regeneration
       const { data, error } = await supabase
         .from("ai_configurations")
         .update(updates)
