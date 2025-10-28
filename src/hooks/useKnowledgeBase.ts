@@ -32,7 +32,7 @@ export const useKnowledgeBase = () => {
       
       console.log('[KB] Fetching documents for customerId:', customerId);
       
-      // @ts-expect-error - Supabase types need regeneration
+      // @ts-ignore
       const { data, error } = await supabase
         .from("kb_documents")
         .select("*")
@@ -66,7 +66,7 @@ export const useKnowledgeBase = () => {
       
       console.log('[KB] Creating document with customerId:', customerId);
       
-      // @ts-expect-error - Supabase types need regeneration
+      // @ts-ignore
       const { data, error } = await supabase
         .from("kb_documents")
         .insert([{
@@ -96,7 +96,7 @@ export const useKnowledgeBase = () => {
 
   const updateDocument = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<KBDocument> & { id: string }) => {
-      // @ts-expect-error - Supabase types need regeneration
+      // @ts-ignore
       const { data, error } = await supabase
         .from("kb_documents")
         .update(updates)
@@ -118,7 +118,7 @@ export const useKnowledgeBase = () => {
 
   const deleteDocument = useMutation({
     mutationFn: async (id: string) => {
-      // @ts-expect-error - Supabase types need regeneration
+      // @ts-ignore
       const { error } = await supabase
         .from("kb_documents")
         .delete()

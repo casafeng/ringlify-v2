@@ -15,6 +15,7 @@ import Billing from "./pages/Billing";
 import Analytics from "./pages/Analytics";
 import Help from "./pages/Help";
 import Settings from "./pages/Settings";
+import PhoneSetup from "./pages/PhoneSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/history" element={<History />} />
           <Route path="/customization" element={<Customization />} />
+          <Route path="/phone-setup" element={<PhoneSetup />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/credits" element={<Credits />} />
           <Route path="/billing" element={<Billing />} />

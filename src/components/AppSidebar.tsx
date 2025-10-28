@@ -1,4 +1,4 @@
-import { LayoutDashboard, History, Palette, Calendar, Coins, CreditCard, TrendingUp, HelpCircle, Settings } from "lucide-react";
+import { LayoutDashboard, History, Palette, Calendar, Coins, CreditCard, TrendingUp, HelpCircle, Settings, Phone } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +22,7 @@ const menuItems: Array<{
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "History", url: "/history", icon: History },
   { title: "Customization", url: "/customization", icon: Palette },
+  { title: "Phone Setup", url: "/phone-setup", icon: Phone },
   { title: "Calendar", url: "/calendar", icon: Calendar },
   { title: "Credits", url: "/credits", icon: Coins },
   { title: "Billing", url: "/billing", icon: CreditCard },
