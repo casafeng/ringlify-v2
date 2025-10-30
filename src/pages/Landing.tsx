@@ -17,9 +17,16 @@ export default function Landing() {
       const rect = phoneRef.current.getBoundingClientRect();
       const windowHeight = window.innerHeight;
       const elementTop = rect.top;
+      const elementHeight = rect.height;
       
-      // Calculate progress from when element enters viewport (bottom) to when it leaves (top)
-      const progress = Math.max(0, Math.min(1, 1 - (elementTop / windowHeight)));
+      // Calculate progress based on scroll position - much more dramatic range
+      // Start animation earlier and extend it longer
+      const scrollStart = windowHeight * 0.8;
+      const scrollEnd = -elementHeight * 0.3;
+      const scrollRange = scrollStart - scrollEnd;
+      const scrolled = scrollStart - elementTop;
+      
+      const progress = Math.max(0, Math.min(1, scrolled / scrollRange));
       setScrollProgress(progress);
     };
 
@@ -179,9 +186,9 @@ export default function Landing() {
       </section>
 
       {/* Scroll Animation - Phone Calling */}
-      <section ref={phoneRef} className="container mx-auto px-6 py-32 relative overflow-hidden">
+      <section ref={phoneRef} className="container mx-auto px-6 py-64 relative overflow-hidden">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center" style={{ perspective: '2000px' }}>
             {/* Left Content */}
             <div className="space-y-6">
               <Badge className="bg-primary/10 text-primary border-primary/20">
@@ -221,14 +228,21 @@ export default function Landing() {
             </div>
 
             {/* Right Phone Mockup with Animation */}
-            <div className="relative flex justify-center items-center min-h-[600px]">
+            <div className="relative flex justify-center items-center min-h-[800px]">
               {/* Animated Phone */}
               <div 
                 className="relative"
                 style={{
-                  transform: `scale(${0.8 + (scrollProgress * 0.2)}) translateY(${20 - (scrollProgress * 20)}px)`,
-                  opacity: Math.max(0.3, scrollProgress),
-                  transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
+                  transform: `
+                    scale(${0.4 + (scrollProgress * 0.8)}) 
+                    translateY(${100 - (scrollProgress * 100)}px) 
+                    rotateY(${-20 + (scrollProgress * 20)}deg)
+                    translateZ(${scrollProgress * 50}px)
+                  `,
+                  opacity: Math.max(0, Math.min(1, scrollProgress * 1.5)),
+                  filter: `blur(${Math.max(0, 8 - (scrollProgress * 8))}px)`,
+                  transition: 'all 0.1s ease-out',
+                  transformStyle: 'preserve-3d'
                 }}
               >
                 {/* Phone Frame */}
@@ -335,11 +349,21 @@ export default function Landing() {
 
                 {/* Glow Effect */}
                 <div 
-                  className="absolute inset-0 -z-10 bg-primary/20 blur-3xl rounded-full"
+                  className="absolute inset-0 -z-10 bg-primary/30 blur-[100px] rounded-full"
                   style={{
-                    opacity: scrollProgress * 0.5,
-                    transform: `scale(${1 + scrollProgress * 0.5})`,
-                    transition: 'all 0.3s ease-out'
+                    opacity: scrollProgress * 0.8,
+                    transform: `scale(${0.5 + scrollProgress * 1.5})`,
+                    transition: 'all 0.1s ease-out'
+                  }}
+                ></div>
+                
+                {/* Additional dramatic glow layers */}
+                <div 
+                  className="absolute inset-0 -z-20 bg-blue-500/20 blur-[150px] rounded-full"
+                  style={{
+                    opacity: Math.max(0, (scrollProgress - 0.3) * 1.2),
+                    transform: `scale(${0.8 + scrollProgress * 1.2})`,
+                    transition: 'all 0.1s ease-out'
                   }}
                 ></div>
               </div>
