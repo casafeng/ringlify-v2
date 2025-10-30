@@ -1,15 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { Phone, Sparkles, Clock, Shield } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
-
-  // Redirect to dashboard immediately (auth disabled for demo)
-  useEffect(() => {
-    navigate("/dashboard");
-  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -19,7 +13,7 @@ export default function Landing() {
           <Phone className="h-8 w-8 text-primary" />
           <span className="text-2xl font-bold text-foreground">Ringlify</span>
         </div>
-        <Button onClick={() => navigate("/auth")} variant="default">
+        <Button onClick={() => navigate("/dashboard")} variant="default">
           Sign In
         </Button>
       </header>
@@ -36,12 +30,12 @@ export default function Landing() {
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              onClick={() => navigate("/auth")}
+              onClick={() => navigate("/dashboard")}
               className="text-lg"
             >
               Get Started Free
             </Button>
-            <Button size="lg" variant="outline" className="text-lg">
+            <Button size="lg" variant="outline" className="text-lg" onClick={() => navigate("/dashboard")}>
               Watch Demo
             </Button>
           </div>
@@ -91,7 +85,7 @@ export default function Landing() {
           <p className="mb-8 text-lg text-muted-foreground">
             Join hundreds of businesses using Ringlify to never miss a call.
           </p>
-          <Button size="lg" onClick={() => navigate("/auth")}>
+          <Button size="lg" onClick={() => navigate("/dashboard")}>
             Start Your Free Trial
           </Button>
         </div>
