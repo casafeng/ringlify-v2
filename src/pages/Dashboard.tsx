@@ -85,60 +85,68 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-border/40 shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Calls</CardTitle>
-              <Phone className="h-4 w-4 text-muted-foreground" />
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Phone className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{calls.length}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <div className="text-3xl font-semibold">{calls.length}</div>
+              <p className="text-xs text-muted-foreground mt-2">
                 +{todayCalls.length} today
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="border-border/40 shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Avg Duration</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-semibold">
                 {Math.floor(avgDuration / 60)}m {avgDuration % 60}s
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-2">
                 Per call
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="border-border/40 shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-semibold">
                 {calls.length > 0 ? Math.round((completedCalls / calls.length) * 100) : 0}%
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-2">
                 {completedCalls} completed
               </p>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <Card className="border-border/40 shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">Active Now</CardTitle>
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageSquare className="h-4 w-4 text-primary" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-3xl font-semibold">
                 {calls.filter(c => c.status === 'in-progress').length}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-2">
                 Live calls
               </p>
             </CardContent>
@@ -149,11 +157,11 @@ const Dashboard = () => {
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Recent Calls - Takes 2 columns */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
+            <Card className="border-border/40 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Recent Calls</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <CardTitle className="text-xl">Recent Calls</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1.5">
                     Latest activity from your AI assistant
                   </p>
                 </div>
@@ -161,7 +169,7 @@ const Dashboard = () => {
                   variant="ghost" 
                   size="sm"
                   onClick={() => navigate('/history')}
-                  className="gap-2"
+                  className="gap-1.5 text-primary hover:text-primary/80"
                 >
                   View all
                   <ArrowRight className="h-4 w-4" />
@@ -182,30 +190,30 @@ const Dashboard = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {calls.slice(0, 5).map((call) => (
                       <div
                         key={call.id}
-                        className="flex items-center justify-between p-4 rounded-xl border hover:bg-muted/50 transition-colors cursor-pointer group"
+                        className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 hover:bg-muted/50 transition-all cursor-pointer group"
                         onClick={() => navigate('/history')}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Phone className="h-4 w-4 text-primary" />
+                        <div className="flex items-center gap-3.5">
+                          <div className="h-11 w-11 rounded-full bg-card border border-border/50 flex items-center justify-center">
+                            <Phone className="h-4.5 w-4.5 text-primary" />
                           </div>
                           <div>
                             <p className="font-medium text-sm">{call.phone_number}</p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               {new Date(call.started_at).toLocaleString()}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-xs">
+                        <div className="flex items-center gap-3">
+                          <Badge variant="secondary" className="text-xs font-normal rounded-full px-3">
                             {call.status}
                           </Badge>
                           {call.duration_sec && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground font-medium">
                               {Math.floor(call.duration_sec / 60)}m {call.duration_sec % 60}s
                             </span>
                           )}
