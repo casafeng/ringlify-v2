@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Phone } from "lucide-react";
+import { Eye, Phone, Search, Filter } from "lucide-react";
 import { CallDetailsDrawer } from "@/components/CallDetailsDrawer";
+import { Input } from "@/components/ui/input";
 
 interface Call {
   id: string;
@@ -20,19 +20,6 @@ interface Call {
   duration_sec: number | null;
 }
 
-const getStatusBadgeVariant = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "completed":
-      return "default";
-    case "in-progress":
-      return "secondary";
-    case "failed":
-      return "destructive";
-    default:
-      return "outline";
-  }
-};
-
 const formatDuration = (seconds: number | null) => {
   if (!seconds) return "N/A";
   const mins = Math.floor(seconds / 60);
@@ -46,9 +33,8 @@ const formatTimestamp = (timestamp: string) => {
 
 const History = () => {
   const [selectedCall, setSelectedCall] = useState<any | null>(null);
-  const [loading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data for demonstration
   const calls: Call[] = [
     {
       id: '1',
@@ -113,7 +99,6 @@ const History = () => {
   ];
 
   const handleViewDetails = (call: Call) => {
-    // Transform to match CallDetailsDrawer interface
     setSelectedCall({
       id: call.id,
       timestamp: formatTimestamp(call.started_at),
@@ -130,82 +115,77 @@ const History = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Call History</h1>
-            <p className="text-muted-foreground">
-              View all incoming calls with transcripts and details
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Phone className="h-5 w-5 text-primary" />
-            <Badge variant="secondary">{calls.length} Total Calls</Badge>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Call History</h1>
+          <p className="text-muted-foreground">
+            Complete record of all interactions with your AI assistant
+          </p>
         </div>
 
-        <Card className="rounded-2xl shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg">All Calls</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Loading calls...
-              </div>
-            ) : calls.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No calls yet. Calls will appear here in real-time.
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Caller ID</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Intent</TableHead>
-                    <TableHead>Sentiment</TableHead>
-                    <TableHead>Transcript</TableHead>
-                    <TableHead className="w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {calls.map((call) => (
-                    <TableRow key={call.id} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell className="font-medium">
-                        {formatTimestamp(call.started_at)}
-                      </TableCell>
-                      <TableCell>{call.phone_number}</TableCell>
-                      <TableCell>{formatDuration(call.duration_sec)}</TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusBadgeVariant(call.status)}>
-                          {call.status}
+        {/* Search and Filters */}
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by phone number, intent, or transcript..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filters
+          </Button>
+        </div>
+
+        {/* Calls List */}
+        <div className="space-y-3">
+          {calls.map((call) => (
+            <Card key={call.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Phone className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-1">
+                        <p className="font-semibold">{call.phone_number}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {call.intent || "Unknown"}
                         </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{call.intent || "N/A"}</Badge>
-                      </TableCell>
-                      <TableCell>{call.sentiment || "N/A"}</TableCell>
-                      <TableCell className="max-w-xs truncate">
+                        {call.sentiment && (
+                          <Badge 
+                            variant="secondary" 
+                            className="text-xs"
+                          >
+                            {call.sentiment}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {formatTimestamp(call.started_at)} • {formatDuration(call.duration_sec)}
+                      </p>
+                      <p className="text-sm text-foreground/80 line-clamp-2">
                         {call.transcript || "No transcript available"}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleViewDetails(call)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleViewDetails(call)}
+                    className="gap-2 flex-shrink-0"
+                  >
+                    <Eye className="h-4 w-4" />
+                    View
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {selectedCall && (

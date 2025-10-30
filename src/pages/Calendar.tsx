@@ -2,13 +2,13 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Clock, User, Phone } from "lucide-react";
+import { Clock, User, Phone, Plus } from "lucide-react";
 
 const Calendar = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
-  // Mock bookings data
   const bookings = [
     {
       id: 1,
@@ -47,25 +47,31 @@ const Calendar = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Calendar</h1>
-          <p className="text-muted-foreground">
-            View and manage all your bookings
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Calendar & Bookings</h1>
+            <p className="text-muted-foreground">
+              Manage appointments created by your AI assistant
+            </p>
+          </div>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Booking
+          </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[350px_1fr]">
+        <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
           {/* Calendar */}
-          <Card className="h-fit">
+          <Card>
             <CardHeader>
-              <CardTitle>Select Date</CardTitle>
+              <CardTitle className="text-lg">Select Date</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex justify-center">
               <CalendarComponent
                 mode="single"
                 selected={date}
                 onSelect={setDate}
-                className="rounded-md border"
+                className="rounded-md"
               />
             </CardContent>
           </Card>
@@ -73,30 +79,37 @@ const Calendar = () => {
           {/* Bookings List */}
           <Card>
             <CardHeader>
-              <CardTitle>
-                Bookings for {date?.toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'long', 
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">
+                    {date?.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      month: 'long', 
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {bookings.length} appointments scheduled
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {bookings.map((booking) => (
                   <div
                     key={booking.id}
-                    className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className="p-4 border rounded-xl hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground" />
                           <span className="font-semibold">{booking.customer}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Phone className="h-3 w-3" />
+                          <Phone className="h-3.5 w-3.5" />
                           <span>{booking.phone}</span>
                         </div>
                       </div>
@@ -110,7 +123,7 @@ const Calendar = () => {
                         <span className="font-medium">{booking.time}</span>
                       </div>
                       <span className="text-muted-foreground">•</span>
-                      <span>{booking.service}</span>
+                      <span className="text-muted-foreground">{booking.service}</span>
                     </div>
                   </div>
                 ))}

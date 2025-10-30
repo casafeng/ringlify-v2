@@ -2,14 +2,14 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Phone, MessageSquare, Clock, TrendingUp } from "lucide-react";
+import { Phone, MessageSquare, Clock, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const Credits = () => {
   const creditUsage = [
-    { label: "Voice Calls", used: 234, total: 500, icon: Phone, color: "text-chart-1" },
-    { label: "Messages", used: 456, total: 1000, icon: MessageSquare, color: "text-chart-2" },
-    { label: "Minutes Used", used: 1240, total: 2000, icon: Clock, color: "text-chart-3" },
+    { label: "Voice Calls", used: 234, total: 500, icon: Phone },
+    { label: "Messages", used: 456, total: 1000, icon: MessageSquare },
+    { label: "Minutes Used", used: 1240, total: 2000, icon: Clock },
   ];
 
   const recentUsage = [
@@ -25,31 +25,32 @@ const Credits = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Credits Usage</h1>
+            <h1 className="text-3xl font-bold mb-2">Credits & Usage</h1>
             <p className="text-muted-foreground">
-              Monitor your usage and manage credits
+              Track your consumption and manage your subscription
             </p>
           </div>
-          <Button size="lg">
-            Purchase Credits
+          <Button size="lg" className="gap-2">
+            <Zap className="h-4 w-4" />
+            Add Credits
           </Button>
         </div>
 
         {/* Current Balance */}
-        <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-primary/20">
+        <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="text-2xl">Current Balance</CardTitle>
+            <CardTitle className="text-lg">Current Balance</CardTitle>
             <CardDescription>Available credits in your account</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <div className="text-5xl font-bold text-primary">1,234</div>
-              <div className="flex items-center gap-2 text-sm">
-                <Badge variant="outline" className="border-success text-success">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  Active
+            <div className="space-y-3">
+              <div className="text-5xl font-bold">1,234</div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="border-success text-success gap-1">
+                  <div className="h-2 w-2 rounded-full bg-success" />
+                  Active Plan
                 </Badge>
-                <span className="text-muted-foreground">Renews on Feb 1, 2025</span>
+                <span className="text-sm text-muted-foreground">Renews on Feb 1, 2025</span>
               </div>
             </div>
           </CardContent>
@@ -60,18 +61,18 @@ const Credits = () => {
           {creditUsage.map((item) => {
             const percentage = (item.used / item.total) * 100;
             return (
-              <Card key={item.label}>
-                <CardHeader className="pb-2">
+              <Card key={item.label} className="hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium">{item.label}</CardTitle>
-                    <item.icon className={`h-4 w-4 ${item.color}`} />
+                    <CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle>
+                    <item.icon className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold">{item.used}</span>
-                      <span className="text-sm text-muted-foreground">/ {item.total}</span>
+                      <span className="text-2xl font-bold">{item.used.toLocaleString()}</span>
+                      <span className="text-sm text-muted-foreground">/ {item.total.toLocaleString()}</span>
                     </div>
                     <Progress value={percentage} className="h-2" />
                     <p className="text-xs text-muted-foreground">
@@ -88,14 +89,14 @@ const Credits = () => {
         <Card>
           <CardHeader>
             <CardTitle>Recent Usage</CardTitle>
-            <CardDescription>Daily breakdown of your credit consumption</CardDescription>
+            <CardDescription>Daily breakdown of your activity</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {recentUsage.map((day) => (
                 <div
                   key={day.date}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex items-center justify-between p-4 border rounded-xl hover:bg-muted/50 transition-colors"
                 >
                   <div>
                     <p className="font-medium">{day.date}</p>
@@ -105,7 +106,7 @@ const Credits = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-bold">{day.cost}</p>
-                    <p className="text-sm text-muted-foreground">Cost</p>
+                    <p className="text-xs text-muted-foreground">Cost</p>
                   </div>
                 </div>
               ))}
@@ -128,13 +129,13 @@ const Credits = () => {
               ].map((pkg) => (
                 <Card key={pkg.name} className={pkg.popular ? "border-primary" : ""}>
                   <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-2">
                       <CardTitle className="text-lg">{pkg.name}</CardTitle>
                       {pkg.popular && (
-                        <Badge variant="default">Popular</Badge>
+                        <Badge>Popular</Badge>
                       )}
                     </div>
-                    <CardDescription>{pkg.credits} credits</CardDescription>
+                    <CardDescription className="text-base font-semibold">{pkg.credits.toLocaleString()} credits</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-3xl font-bold">{pkg.price}</div>
