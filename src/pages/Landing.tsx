@@ -1,26 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useCustomer } from "@/contexts/CustomerContext";
 import { useEffect } from "react";
 import { Phone, Sparkles, Clock, Shield } from "lucide-react";
 
 export default function Landing() {
   const navigate = useNavigate();
-  const { user, loading } = useCustomer();
 
+  // Redirect to dashboard immediately (auth disabled for demo)
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-lg text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
+    navigate("/dashboard");
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">

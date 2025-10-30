@@ -26,11 +26,10 @@ export default function Auth() {
   const [signupLastName, setSignupLastName] = useState("");
   const [signupBusinessName, setSignupBusinessName] = useState("");
 
+  // Redirect to dashboard immediately (auth disabled for demo)
   useEffect(() => {
-    if (!loading && user) {
-      navigate("/dashboard");
-    }
-  }, [user, loading, navigate]);
+    navigate("/dashboard");
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

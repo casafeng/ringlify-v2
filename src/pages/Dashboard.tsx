@@ -1,61 +1,53 @@
-import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, TrendingUp, Clock, MessageSquare } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useCustomer } from "@/contexts/CustomerContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Dashboard = () => {
-  const { customerId } = useCustomer();
   const navigate = useNavigate();
-  const [calls, setCalls] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(false);
 
-  useEffect(() => {
-    if (customerId) {
-      fetchCalls();
-      
-      // Set up real-time subscription
-      const channel = supabase
-        .channel('calls-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'calls'
-          },
-          (payload) => {
-            console.log('Real-time call update:', payload);
-            fetchCalls();
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [customerId]);
-
-  const fetchCalls = async () => {
-    if (!customerId) return;
-    
-    // @ts-ignore
-    const { data, error } = await supabase
-      .from('calls')
-      .select('*')
-      .eq('customer_id', customerId)
-      .order('started_at', { ascending: false });
-
-    if (!error && data) {
-      setCalls(data);
-    }
-    setLoading(false);
-  };
+  // Mock data for demonstration
+  const calls = [
+    {
+      id: '1',
+      phone_number: '+1 (555) 123-4567',
+      started_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+      status: 'completed',
+      duration_sec: 245,
+    },
+    {
+      id: '2',
+      phone_number: '+1 (555) 234-5678',
+      started_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+      status: 'completed',
+      duration_sec: 180,
+    },
+    {
+      id: '3',
+      phone_number: '+1 (555) 345-6789',
+      started_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+      status: 'completed',
+      duration_sec: 312,
+    },
+    {
+      id: '4',
+      phone_number: '+1 (555) 456-7890',
+      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+      status: 'completed',
+      duration_sec: 198,
+    },
+    {
+      id: '5',
+      phone_number: '+1 (555) 567-8901',
+      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+      status: 'completed',
+      duration_sec: 267,
+    },
+  ];
 
   // Calculate metrics
   const today = new Date();
