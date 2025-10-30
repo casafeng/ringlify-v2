@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Phone, PhoneCall, CheckCircle2, Clock, Zap, Shield, BarChart3, Calendar } from "lucide-react";
+import { Phone, PhoneCall, CheckCircle2, Clock, Zap, Shield, BarChart3, Calendar, Share2, Mail, User, MessageSquare, CreditCard } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -34,15 +35,23 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-6 pt-32 pb-20 text-center">
-        <div className="mx-auto max-w-4xl space-y-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+      <section className="container mx-auto px-6 pt-32 pb-20 text-center relative overflow-hidden">
+        {/* Floating decorative elements */}
+        <div className="absolute top-20 left-10 w-24 h-24 opacity-20 animate-float">
+          <div className="w-full h-full rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-2xl"></div>
+        </div>
+        <div className="absolute top-40 right-20 w-20 h-20 opacity-20 animate-float" style={{ animationDelay: "1s" }}>
+          <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-400 to-purple-600 shadow-2xl"></div>
+        </div>
+
+        <div className="mx-auto max-w-4xl space-y-8 animate-fade-in relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20">
             <Zap className="h-4 w-4" />
             <span>AI-Powered Phone Assistant</span>
           </div>
           
-          <h1 className="text-6xl md:text-7xl font-bold tracking-tight leading-tight">
-            Your AI assistant
+          <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-tight">
+            #1 AI assistant
             <br />
             <span className="bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
               for phone calls
@@ -50,14 +59,14 @@ export default function Landing() {
           </h1>
           
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Never miss a call again. Ringlify answers every call, books appointments, and provides perfect customer service 24/7.
+            Answer every call, book appointments automatically, and provide perfect customer service 24/7.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <Button
               size="lg"
               onClick={() => navigate("/dashboard")}
-              className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transition-all"
+              className="text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-2xl transition-all hover:-translate-y-0.5"
             >
               <PhoneCall className="mr-2 h-5 w-5" />
               Start Free Trial
@@ -65,7 +74,7 @@ export default function Landing() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="text-lg px-8 py-6 rounded-xl" 
+              className="text-lg px-8 py-6 rounded-xl hover:shadow-lg transition-all" 
               onClick={() => navigate("/dashboard")}
             >
               Watch Demo
@@ -84,21 +93,61 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Hero Image/Demo */}
-        <div className="mt-20 mx-auto max-w-5xl">
-          <Card className="p-2 rounded-2xl shadow-2xl bg-gradient-to-br from-gray-900 to-gray-800 border-gray-700">
-            <div className="rounded-xl overflow-hidden bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-sm aspect-video flex items-center justify-center">
-              <div className="text-center space-y-4 p-8">
-                <div className="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-green-500/20 border border-green-500/30">
-                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-green-400 font-medium">Live Call in Progress</span>
+        {/* Hero Demo */}
+        <div className="mt-24 mx-auto max-w-6xl relative">
+          <div className="absolute -top-10 -left-10 w-32 h-32 rounded-3xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-3xl"></div>
+          <div className="absolute -bottom-10 -right-10 w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-3xl"></div>
+          
+          <Card className="p-3 rounded-3xl shadow-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-2 relative">
+            <div className="rounded-2xl overflow-hidden bg-background/95 backdrop-blur-sm">
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-900 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-green-600 dark:text-green-400 text-sm font-medium">Call in Progress</span>
+                  </div>
                 </div>
-                <div className="text-white/80 text-lg max-w-md mx-auto">
-                  "Hi, I'd like to schedule an appointment for next Tuesday at 2 PM..."
-                </div>
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <div className="h-1 w-32 bg-white/20 rounded-full overflow-hidden">
-                    <div className="h-full w-3/4 bg-primary rounded-full animate-pulse"></div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold">
+                      J
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-white dark:bg-gray-800 rounded-2xl rounded-tl-none p-4 shadow-sm">
+                        <p className="text-sm">"Hi, I'd like to schedule a haircut appointment for next Tuesday around 2 PM if that's available."</p>
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-2 mt-1">John Smith • Just now</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start gap-3 justify-end">
+                    <div className="flex-1 flex justify-end">
+                      <div className="max-w-md">
+                        <div className="bg-gradient-to-br from-primary to-blue-600 rounded-2xl rounded-tr-none p-4 shadow-sm text-white">
+                          <p className="text-sm">"Perfect! I can book you for Tuesday, January 14th at 2:00 PM with Sarah. I'll send you a confirmation text and email. Is there anything specific you'd like done?"</p>
+                        </div>
+                        <span className="text-xs text-muted-foreground mr-2 mt-1 flex justify-end">AI Assistant • Now</span>
+                      </div>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white">
+                      <Phone className="h-5 w-5" />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground justify-center pt-2">
+                    <div className="flex items-center gap-1">
+                      <div className="w-1 h-4 bg-primary rounded-full animate-pulse"></div>
+                      <div className="w-1 h-6 bg-primary/70 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
+                      <div className="w-1 h-5 bg-primary/50 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+                      <div className="w-1 h-7 bg-primary rounded-full animate-pulse" style={{ animationDelay: "0.3s" }}></div>
+                    </div>
+                    <span>AI listening...</span>
                   </div>
                 </div>
               </div>
@@ -107,7 +156,114 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* After Every Call Section */}
+      <section className="container mx-auto px-6 py-32">
+        <div className="text-center mb-12">
+          <p className="text-primary font-medium mb-4">After every call...</p>
+          <h2 className="text-5xl md:text-6xl font-bold mb-4">
+            Beautiful summaries
+            <br />
+            <span className="text-muted-foreground">of every conversation</span>
+          </h2>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Ringlify generates detailed call summaries with transcripts, sentiment analysis, and action items automatically.
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto mt-16">
+          <Card className="rounded-3xl overflow-hidden shadow-2xl border-2">
+            <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 p-8">
+              <div className="bg-background rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Thu, Jan 9</span>
+                    </div>
+                    <h3 className="text-xl font-semibold">Appointment Booking Call</h3>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Email
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Caller Information
+                    </h4>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Name</p>
+                        <p className="font-medium">John Smith</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">+1 (555) 123-4567</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Email</p>
+                        <p className="font-medium">john.smith@email.com</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Sentiment</p>
+                        <Badge className="bg-green-500/10 text-green-700 dark:text-green-400">Positive</Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Action Items
+                    </h4>
+                    <ul className="space-y-2">
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2"></div>
+                        <span>Booked haircut appointment for Tuesday, January 14th at 2:00 PM</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2"></div>
+                        <span>Assigned to Sarah (senior stylist)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2"></div>
+                        <span>Sent confirmation via text and email</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="border-t pt-6">
+                    <h4 className="font-semibold mb-3">Call Transcript</h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex gap-2">
+                        <span className="font-medium min-w-[100px] text-muted-foreground">John Smith:</span>
+                        <p>"Hi, I'd like to schedule a haircut appointment for next Tuesday around 2 PM if that's available."</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-medium min-w-[100px] text-primary">AI Assistant:</span>
+                        <p>"Perfect! I can book you for Tuesday, January 14th at 2:00 PM with Sarah. I'll send you a confirmation text and email. Is there anything specific you'd like done?"</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-medium min-w-[100px] text-muted-foreground">John Smith:</span>
+                        <p>"Just a regular trim, nothing fancy. That time works great, thank you!"</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
       <section className="container mx-auto px-6 py-20">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
           {[
@@ -190,28 +346,198 @@ export default function Landing() {
       <section className="container mx-auto px-6 py-20">
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-4xl md:text-5xl font-bold">
-            Get started in <span className="text-primary">3 simple steps</span>
+            Four ways Ringlify makes
+            <br />
+            <span className="text-primary">your calls better</span>
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {[
-            { step: "1", title: "Connect Your Number", desc: "Link your existing phone number or get a new one" },
-            { step: "2", title: "Customize Your AI", desc: "Train your AI on your business, services, and preferences" },
-            { step: "3", title: "Start Receiving Calls", desc: "Your AI handles calls while you focus on your business" }
-          ].map((item, i) => (
-            <div key={i} className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
-                {item.step}
+        <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+          <Card className="rounded-3xl overflow-hidden hover:shadow-2xl transition-all">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-700 p-8 text-white">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                <div className="bg-gray-900/80 rounded-xl p-4 mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="px-3 py-1 rounded-full bg-blue-500 text-xs font-medium">
+                      AI Response
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-200 leading-relaxed">
+                    "Based on your business hours, I can offer you Wednesday at 3 PM or Thursday at 10 AM. The Wednesday slot would be with our senior technician who specializes in that service..."
+                  </p>
+                </div>
+                <div className="text-center py-2">
+                  <div className="inline-flex items-center gap-1">
+                    <div className="w-1 h-3 bg-white/60 rounded-full animate-pulse"></div>
+                    <div className="w-1 h-5 bg-white/80 rounded-full animate-pulse" style={{ animationDelay: "0.1s" }}></div>
+                    <div className="w-1 h-4 bg-white/70 rounded-full animate-pulse" style={{ animationDelay: "0.2s" }}></div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold">{item.title}</h3>
-              <p className="text-muted-foreground">{item.desc}</p>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800">
+              <h3 className="text-xl font-semibold mb-2">AI that understands context</h3>
+              <p className="text-muted-foreground">
+                Ringlify uses advanced AI to understand your business, services, and availability to provide intelligent responses in real-time.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="rounded-3xl overflow-hidden hover:shadow-2xl transition-all">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-8 text-white">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 space-y-3">
+                <div className="flex items-center justify-between p-3 bg-white/90 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">Confirmation Email</p>
+                      <p className="text-xs text-muted-foreground">Sent to customer</p>
+                    </div>
+                  </div>
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+                <div className="flex items-center justify-between p-3 bg-white/90 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-5 w-5 text-purple-600" />
+                    <div>
+                      <p className="font-medium text-sm text-gray-900 dark:text-white">Calendar Updated</p>
+                      <p className="text-xs text-muted-foreground">Tuesday, 2:00 PM</p>
+                    </div>
+                  </div>
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-gray-900 dark:to-gray-800">
+              <h3 className="text-xl font-semibold mb-2">Automatic follow-ups</h3>
+              <p className="text-muted-foreground">
+                Send perfectly formatted confirmation emails, calendar invites, and SMS reminders within seconds of every call.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="rounded-3xl overflow-hidden hover:shadow-2xl transition-all">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-700 p-8 text-white">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-white/90 dark:bg-gray-800 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">99%</div>
+                    <div className="text-xs text-muted-foreground">Success Rate</div>
+                  </div>
+                  <div className="bg-white/90 dark:bg-gray-800 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">1.2s</div>
+                    <div className="text-xs text-muted-foreground">Avg Response</div>
+                  </div>
+                  <div className="bg-white/90 dark:bg-gray-800 rounded-lg p-3 text-center">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">24/7</div>
+                    <div className="text-xs text-muted-foreground">Available</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800">
+              <h3 className="text-xl font-semibold mb-2">Real-time analytics</h3>
+              <p className="text-muted-foreground">
+                Track every call with detailed metrics, sentiment analysis, and performance insights that help you optimize your service.
+              </p>
+            </div>
+          </Card>
+
+          <Card className="rounded-3xl overflow-hidden hover:shadow-2xl transition-all">
+            <div className="bg-gradient-to-br from-orange-500 to-red-600 p-8 text-white">
+              <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                  <span className="text-sm font-medium">Completely undetectable</span>
+                </div>
+                <p className="text-sm mb-4">
+                  Natural conversations that customers love. Our AI speaks like a human, understands context, and never sounds robotic.
+                </p>
+                <div className="flex gap-2">
+                  <Badge className="bg-white/20 border-white/30">Natural Speech</Badge>
+                  <Badge className="bg-white/20 border-white/30">Context Aware</Badge>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-gradient-to-br from-orange-50 to-red-100 dark:from-gray-900 dark:to-gray-800">
+              <h3 className="text-xl font-semibold mb-2">Human-like conversations</h3>
+              <p className="text-muted-foreground">
+                Powered by advanced AI models trained on millions of real conversations to sound natural and professional.
+              </p>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Integration Section */}
+      <section className="container mx-auto px-6 py-20">
+        <div className="text-center mb-12">
+          <p className="text-sm text-muted-foreground uppercase tracking-wider mb-4">Works with your existing tools</p>
+          <h2 className="text-3xl font-bold mb-4">Seamless integrations</h2>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto items-center">
+          {[
+            { name: "Twilio", icon: Phone },
+            { name: "Google Calendar", icon: Calendar },
+            { name: "Stripe", icon: CreditCard },
+            { name: "Slack", icon: MessageSquare },
+          ].map((integration, i) => (
+            <div key={i} className="flex flex-col items-center gap-3 p-6 rounded-2xl hover:bg-muted/50 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <integration.icon className="h-6 w-6 text-primary" />
+              </div>
+              <span className="font-medium text-sm">{integration.name}</span>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Social Proof */}
+      {/* Simple Steps */}
+      <section className="container mx-auto px-6 py-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Get started in <span className="text-primary">minutes</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              No complex setup required. Start handling calls in 3 simple steps.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {[
+              {
+                step: "1",
+                title: "Connect Your Number",
+                desc: "Link your existing phone number or get a new one instantly. Works with all major carriers.",
+                color: "from-blue-500 to-blue-600"
+              },
+              {
+                step: "2",
+                title: "Customize Your AI",
+                desc: "Tell us about your business, services, and hours. Our AI learns your preferences in minutes.",
+                color: "from-purple-500 to-purple-600"
+              },
+              {
+                step: "3",
+                title: "Start Receiving Calls",
+                desc: "That's it! Your AI receptionist is ready to handle calls 24/7 while you focus on your business.",
+                color: "from-green-500 to-emerald-600"
+              }
+            ].map((item, i) => (
+              <div key={i} className="flex gap-6 items-start">
+                <div className={`flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center text-2xl font-bold text-white shadow-lg`}>
+                  {item.step}
+                </div>
+                <div className="flex-1 pt-2">
+                  <h3 className="text-2xl font-semibold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-lg">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
