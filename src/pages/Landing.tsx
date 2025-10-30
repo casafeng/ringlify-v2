@@ -3,9 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { Phone, PhoneCall, CheckCircle2, Clock, Zap, Shield, BarChart3, Calendar, Share2, Mail, User, MessageSquare, CreditCard } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef, useState } from "react";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!phoneRef.current) return;
+      
+      const rect = phoneRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const elementTop = rect.top;
+      
+      // Calculate progress from when element enters viewport (bottom) to when it leaves (top)
+      const progress = Math.max(0, Math.min(1, 1 - (elementTop / windowHeight)));
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950">
@@ -153,6 +175,176 @@ export default function Landing() {
               </div>
             </div>
           </Card>
+        </div>
+      </section>
+
+      {/* Scroll Animation - Phone Calling */}
+      <section ref={phoneRef} className="container mx-auto px-6 py-32 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="space-y-6">
+              <Badge className="bg-primary/10 text-primary border-primary/20">
+                Watch it in action
+              </Badge>
+              <h2 className="text-4xl md:text-5xl font-bold">
+                Answer calls
+                <br />
+                <span className="text-primary">instantly</span>
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Your AI receptionist picks up every call in under a second, 
+                understands the caller's needs, and handles everything from 
+                bookings to customer questions.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Natural conversation flow",
+                  "Instant appointment booking",
+                  "Real-time calendar integration",
+                  "Multi-language support"
+                ].map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center gap-3"
+                    style={{
+                      opacity: scrollProgress > (i * 0.15) ? 1 : 0,
+                      transform: scrollProgress > (i * 0.15) ? 'translateX(0)' : 'translateX(-20px)',
+                      transition: 'all 0.5s ease-out'
+                    }}
+                  >
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <span className="text-lg">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Phone Mockup with Animation */}
+            <div className="relative flex justify-center items-center min-h-[600px]">
+              {/* Animated Phone */}
+              <div 
+                className="relative"
+                style={{
+                  transform: `scale(${0.8 + (scrollProgress * 0.2)}) translateY(${20 - (scrollProgress * 20)}px)`,
+                  opacity: Math.max(0.3, scrollProgress),
+                  transition: 'transform 0.3s ease-out, opacity 0.3s ease-out'
+                }}
+              >
+                {/* Phone Frame */}
+                <div className="w-[320px] h-[640px] bg-gradient-to-br from-gray-900 to-gray-800 rounded-[3rem] p-3 shadow-2xl border-8 border-gray-800 relative">
+                  {/* Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-gray-900 rounded-b-3xl z-10"></div>
+                  
+                  {/* Screen */}
+                  <div className="w-full h-full bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 rounded-[2.5rem] overflow-hidden relative">
+                    {/* Status Bar */}
+                    <div className="absolute top-0 left-0 right-0 pt-8 px-8 flex justify-between text-xs font-medium text-gray-900 dark:text-white z-20">
+                      <span>9:41</span>
+                      <div className="flex gap-1">
+                        <div className="w-4 h-4">📶</div>
+                        <div className="w-4 h-4">📶</div>
+                      </div>
+                    </div>
+
+                    {/* Calling Interface */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-between py-20 px-8">
+                      {/* Caller Info */}
+                      <div 
+                        className="text-center space-y-4"
+                        style={{
+                          opacity: scrollProgress > 0.3 ? 1 : 0,
+                          transform: scrollProgress > 0.3 ? 'translateY(0)' : 'translateY(-20px)',
+                          transition: 'all 0.5s ease-out'
+                        }}
+                      >
+                        <div className="relative mx-auto">
+                          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg">
+                            <Phone className="h-12 w-12 text-white" />
+                          </div>
+                          {/* Pulsing rings */}
+                          <div 
+                            className="absolute inset-0 rounded-full border-4 border-primary animate-ping"
+                            style={{
+                              opacity: scrollProgress > 0.5 ? 0.5 : 0
+                            }}
+                          ></div>
+                        </div>
+                        <div>
+                          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            Ringlify AI
+                          </h3>
+                          <p className="text-lg text-gray-600 dark:text-gray-400">
+                            Incoming Call...
+                          </p>
+                        </div>
+                        <div 
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/20 border border-green-500/30"
+                          style={{
+                            opacity: scrollProgress > 0.6 ? 1 : 0,
+                            transition: 'opacity 0.5s ease-out'
+                          }}
+                        >
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                          <span className="text-green-600 dark:text-green-400 text-sm font-medium">
+                            Connecting...
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Audio Waveform */}
+                      <div 
+                        className="flex items-center justify-center gap-1 h-16"
+                        style={{
+                          opacity: scrollProgress > 0.7 ? 1 : 0,
+                          transition: 'opacity 0.5s ease-out'
+                        }}
+                      >
+                        {[...Array(20)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="w-1 bg-primary rounded-full"
+                            style={{
+                              height: `${20 + Math.sin((scrollProgress * 10 + i) * 0.5) * 30}px`,
+                              opacity: 0.3 + (Math.sin((scrollProgress * 10 + i) * 0.5) * 0.7),
+                              transition: 'all 0.1s ease-out'
+                            }}
+                          ></div>
+                        ))}
+                      </div>
+
+                      {/* Call Actions */}
+                      <div 
+                        className="flex gap-8"
+                        style={{
+                          opacity: scrollProgress > 0.5 ? 1 : 0,
+                          transform: scrollProgress > 0.5 ? 'translateY(0)' : 'translateY(20px)',
+                          transition: 'all 0.5s ease-out'
+                        }}
+                      >
+                        <button className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                          <PhoneCall className="h-8 w-8 text-white rotate-[135deg]" />
+                        </button>
+                        <button className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                          <PhoneCall className="h-8 w-8 text-white" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Glow Effect */}
+                <div 
+                  className="absolute inset-0 -z-10 bg-primary/20 blur-3xl rounded-full"
+                  style={{
+                    opacity: scrollProgress * 0.5,
+                    transform: `scale(${1 + scrollProgress * 0.5})`,
+                    transition: 'all 0.3s ease-out'
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
