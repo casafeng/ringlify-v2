@@ -5,14 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ConversationalWidget } from "@/components/ConversationalWidget";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { customerId } = useCustomer();
+  const queryClient = useQueryClient();
 
   // Fetch real calls data
   const { data: calls = [], isLoading } = useQuery({
@@ -32,6 +34,32 @@ const Dashboard = () => {
     },
     enabled: !!customerId,
   });
+
+  // Set up real-time subscription for new calls
+  useEffect(() => {
+    if (!customerId) return;
+
+    const channel = supabase
+      .channel('dashboard-calls')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'calls',
+          filter: `customer_id=eq.${customerId}`
+        },
+        () => {
+          // Invalidate queries to refetch data
+          queryClient.invalidateQueries({ queryKey: ["calls", customerId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [customerId, queryClient]);
 
   // Calculate metrics
   const today = new Date();
