@@ -7,6 +7,7 @@ import { WelcomeStep } from "./steps/WelcomeStep";
 import { PhoneSetupMethodStep } from "./steps/PhoneSetupMethodStep";
 import { ForwardingSetupStep } from "./steps/ForwardingSetupStep";
 import { PurchaseNumberStep } from "./steps/PurchaseNumberStep";
+import { BusinessQuestionsStep } from "./steps/BusinessQuestionsStep";
 import { BusinessInfoStep } from "./steps/BusinessInfoStep";
 import { KnowledgeBaseStep } from "./steps/KnowledgeBaseStep";
 import { PersonalityStep } from "./steps/PersonalityStep";
@@ -39,9 +40,10 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
 
     return [
       ...baseSteps,
-      { id: 'business', title: 'Business Info', component: BusinessInfoStep },
-      { id: 'knowledge', title: 'Knowledge Base', component: KnowledgeBaseStep },
+      { id: 'questions', title: 'About Your Business', component: BusinessQuestionsStep },
+      { id: 'business', title: 'Business Details', component: BusinessInfoStep },
       { id: 'personality', title: 'AI Personality', component: PersonalityStep },
+      { id: 'knowledge', title: 'Additional Knowledge', component: KnowledgeBaseStep },
       { id: 'test', title: 'Test Call', component: TestCallStep },
       { id: 'complete', title: 'Complete', component: CompletionStep },
     ];
@@ -88,7 +90,8 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             <CardDescription>
               {currentStep === 0 && "Let's get your AI phone assistant set up in just a few steps"}
               {currentStep === 1 && "Choose how you'd like to set up your phone number"}
-              {currentStep > 1 && currentStep < steps.length - 1 && "Configure your AI assistant"}
+              {steps[currentStep]?.id === 'questions' && "Help your AI understand your business better"}
+              {currentStep > 2 && currentStep < steps.length - 1 && "Configure your AI assistant"}
               {currentStep === steps.length - 1 && "You're all set!"}
             </CardDescription>
           </CardHeader>
@@ -104,7 +107,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                 onNext: handleNext,
                 setPhoneNumberConfigured 
               })}
-              {...((steps[currentStep].id === 'business' || steps[currentStep].id === 'knowledge' || steps[currentStep].id === 'personality') && { 
+              {...((steps[currentStep].id === 'questions' || steps[currentStep].id === 'business' || steps[currentStep].id === 'knowledge' || steps[currentStep].id === 'personality') && { 
                 onNext: handleNext 
               })}
               {...(steps[currentStep].id === 'test' && { 
