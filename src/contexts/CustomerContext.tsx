@@ -23,24 +23,69 @@ interface CustomerProviderProps {
 }
 
 export function CustomerProvider({ children }: CustomerProviderProps) {
-  // Mock data for demonstration
-  const mockUser = {
-    id: 'demo-user-123',
-    email: 'demo@ringlify.com',
-    created_at: new Date().toISOString(),
-  } as User;
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const mockSession = {
-    user: mockUser,
-    access_token: 'demo-token',
-  } as Session;
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Fetch customer ID when user logs in
+        if (session?.user) {
+          setTimeout(() => {
+            fetchCustomerId(session.user.id);
+          }, 0);
+        } else {
+          setCustomerId(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchCustomerId(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchCustomerId = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('customer_id')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      setCustomerId(data?.customer_id || null);
+    } catch (error) {
+      console.error('Error fetching customer ID:', error);
+      setCustomerId(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <CustomerContext.Provider value={{ 
-      user: mockUser, 
-      session: mockSession, 
-      customerId: 'demo-customer-123', 
-      loading: false 
+      user, 
+      session, 
+      customerId, 
+      loading 
     }}>
       {children}
     </CustomerContext.Provider>
