@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CustomerProvider } from "./contexts/CustomerContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -30,20 +31,20 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/customization" element={<Customization />} />
-          <Route path="/phone-setup" element={<PhoneSetup />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/credits" element={<Credits />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/settings" element={<Settings />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+            <Route path="/customization" element={<ProtectedRoute><Customization /></ProtectedRoute>} />
+            <Route path="/phone-setup" element={<ProtectedRoute><PhoneSetup /></ProtectedRoute>} />
+            <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+            <Route path="/credits" element={<ProtectedRoute><Credits /></ProtectedRoute>} />
+            <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
+            <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><Help /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
     </TooltipProvider>
     </CustomerProvider>
   </QueryClientProvider>
