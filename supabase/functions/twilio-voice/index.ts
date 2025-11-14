@@ -140,17 +140,15 @@ serve(async (req) => {
         });
       }
 
-      // Build WebSocket URL for OpenAI edge function
-      // CRITICAL: Use the full Supabase project URL for WebSocket
-      const projectId = 'qwnollcgtkduspiojzpd';
-      const wsUrl = `wss://${projectId}.supabase.co/functions/v1/openai-voice?callId=${call?.id || callSid}&customerId=${customerId || ''}`;
+      // Build WebSocket URL for voice orchestrator
+      const wsUrl = `wss://ctjlgvosazekpxxtxeia.supabase.co/functions/v1/voice-orchestrator?callId=${call?.id || callSid}&customerId=${customerId || ''}`;
       
       console.log('WebSocket URL:', wsUrl);
       
       // Return TwiML to start Media Stream
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say>Connecting you to Ringlfy AI assistant.</Say>
+    <Say>Connecting you to Ringlify AI assistant.</Say>
     <Connect>
         <Stream url="${wsUrl}">
             <Parameter name="callId" value="${call?.id || callSid}" />

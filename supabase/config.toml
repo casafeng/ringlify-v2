@@ -11,3 +11,12 @@ verify_jwt = true
 
 [functions.twilio-status]
 verify_jwt = false
+
+[functions.twilio-voice]
+verify_jwt = false
+
+[functions.voice-orchestrator]
+verify_jwt = false
+
+[functions.structured-llm]
+verify_jwt = false
