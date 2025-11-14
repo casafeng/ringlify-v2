@@ -17,17 +17,18 @@ async function scoreDocumentRelevance(query: string, docs: any[], lovableApiKey:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-lite',
+        model: 'google/gemini-2.5-flash',
         messages: [{
           role: 'user',
-          content: `Rate the relevance of each document to the query. Return ONLY a JSON array of scores 0-1.
+          content: `Rate how relevant each document is for answering this query. Score from 0.0 to 1.0.
+Consider: business info, services, hours, contact details, FAQs.
 
 Query: "${query}"
 
 Documents:
-${docs.map((d, i) => `${i}. ${d.title}: ${d.content.substring(0, 200)}...`).join('\n')}
+${docs.map((d, i) => `${i}. ${d.title}: ${d.content.substring(0, 300)}...`).join('\n\n')}
 
-Return format: [0.9, 0.3, 0.8, ...]`
+Return ONLY a JSON array of numbers: [0.9, 0.3, 0.8, ...]`
         }],
       }),
     });
@@ -35,13 +36,19 @@ Return format: [0.9, 0.3, 0.8, ...]`
     if (response.ok) {
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || '[]';
-      const scores = JSON.parse(content.match(/\[(.*?)\]/)?.[0] || '[]');
-      return docs.map((doc, i) => ({ ...doc, relevance: scores[i] || 0 }));
+      console.log('[KB Scoring] Raw response:', content);
+      const match = content.match(/\[[\d.,\s]+\]/);
+      if (match) {
+        const scores = JSON.parse(match[0]);
+        console.log('[KB Scoring] Parsed scores:', scores);
+        return docs.map((doc, i) => ({ ...doc, relevance: scores[i] || 0.7 }));
+      }
     }
   } catch (e) {
-    console.error('Scoring error:', e);
+    console.error('[KB Scoring] Error:', e);
   }
-  return docs.map(doc => ({ ...doc, relevance: 0.5 }));
+  // Default to high relevance if scoring fails
+  return docs.map(doc => ({ ...doc, relevance: 0.8 }));
 }
 
 serve(async (req) => {
@@ -85,13 +92,18 @@ serve(async (req) => {
     let confidence = 'high';
 
     if (kbDocs && kbDocs.length > 0) {
+      console.log('[KB] Scoring documents for query:', userQuery);
       const scoredDocs = await scoreDocumentRelevance(userQuery, kbDocs, lovableApiKey);
+      console.log('[KB] Scored docs:', scoredDocs.map(d => ({ title: d.title, relevance: d.relevance })));
+      
       relevantDocs = scoredDocs
-        .filter(doc => doc.relevance >= 0.5)
+        .filter(doc => doc.relevance >= 0.3)
         .sort((a, b) => b.relevance - a.relevance)
         .slice(0, 3);
 
-      if (relevantDocs.length === 0 || relevantDocs[0].relevance < 0.6) {
+      console.log('[KB] Relevant docs after filtering:', relevantDocs.length);
+
+      if (relevantDocs.length === 0 || relevantDocs[0].relevance < 0.4) {
         confidence = 'low';
       }
 
@@ -116,25 +128,32 @@ serve(async (req) => {
     // Build context with only relevant documents
     const knowledgeContext = relevantDocs.length > 0
       ? relevantDocs.map(doc => `Source: ${doc.title}\nContent: ${doc.content}`).join('\n\n---\n\n')
-      : 'No relevant knowledge base documents found.';
+      : '';
 
-    let systemPrompt = `You are an AI assistant for a business.
+    // Extract business name from KB if available
+    const businessName = kbDocs?.[0]?.content.match(/Name:\s*([^\n]+)/)?.[1] || 
+                        kbDocs?.[0]?.content.match(/business[_\s]name[:\s]*([^\n]+)/i)?.[1] ||
+                        'the business';
 
-Business Information:
-${aiConfig?.business_context || 'No business context provided'}
+    let systemPrompt = `You are an AI assistant representing ${businessName}.
 
-Tone: ${aiConfig?.tone || 'professional'}
-${aiConfig?.greeting ? `Greeting: ${aiConfig.greeting}` : ''}
+${aiConfig?.business_context ? `Business Context: ${aiConfig.business_context}` : ''}
+
+Communication Style:
+- Tone: ${aiConfig?.tone || 'professional and friendly'}
+- Be helpful, accurate, and personable
+${aiConfig?.greeting ? `- Use this greeting when appropriate: ${aiConfig.greeting}` : ''}
 
 Knowledge Base:
-${knowledgeContext}
+${knowledgeContext || 'No knowledge base documents available.'}
 
 Instructions:
-- Answer questions using ONLY the information from the knowledge base above
-- Always cite which source you used (mention the source title)
-- If the knowledge base doesn't contain information to answer the question, say "I don't have information about that in my knowledge base."
-- Use the specified tone in your responses
-- Be helpful and accurate`;
+1. You ARE the assistant for ${businessName} - answer as if you represent the business
+2. When asked "who am I calling" or similar, explain you're the AI assistant for ${businessName}
+3. Use the knowledge base to answer questions about services, hours, booking, etc.
+4. If information isn't in the knowledge base, politely say so and offer to help with what you do know
+5. Be conversational and helpful - don't just repeat "I don't have information"
+6. Cite sources when using specific knowledge base information`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
