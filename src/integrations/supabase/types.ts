@@ -561,47 +561,62 @@ export type Database = {
       kb_documents: {
         Row: {
           category: string | null
+          chunk_index: number | null
           content: string
           created_at: string
           customer_id: string
           file_path: string | null
           id: string
           is_active: boolean
+          is_chunk: boolean | null
+          last_used_at: string | null
           metadata: Json | null
+          parent_document_id: string | null
           source_type: string | null
           source_url: string | null
           title: string
           updated_at: string
+          usage_count: number | null
           version: number
         }
         Insert: {
           category?: string | null
+          chunk_index?: number | null
           content: string
           created_at?: string
           customer_id: string
           file_path?: string | null
           id?: string
           is_active?: boolean
+          is_chunk?: boolean | null
+          last_used_at?: string | null
           metadata?: Json | null
+          parent_document_id?: string | null
           source_type?: string | null
           source_url?: string | null
           title: string
           updated_at?: string
+          usage_count?: number | null
           version?: number
         }
         Update: {
           category?: string | null
+          chunk_index?: number | null
           content?: string
           created_at?: string
           customer_id?: string
           file_path?: string | null
           id?: string
           is_active?: boolean
+          is_chunk?: boolean | null
+          last_used_at?: string | null
           metadata?: Json | null
+          parent_document_id?: string | null
           source_type?: string | null
           source_url?: string | null
           title?: string
           updated_at?: string
+          usage_count?: number | null
           version?: number
         }
         Relationships: [
@@ -610,6 +625,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kb_documents_parent_document_id_fkey"
+            columns: ["parent_document_id"]
+            isOneToOne: false
+            referencedRelation: "kb_documents"
             referencedColumns: ["id"]
           },
         ]
