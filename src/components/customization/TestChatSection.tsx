@@ -3,13 +3,22 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Send, Loader2, BookOpen, TrendingUp } from "lucide-react";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { toast } from "sonner";
+
+interface Source {
+  id: string;
+  title: string;
+  relevance: number;
+}
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  sources?: Source[];
+  confidence?: string;
 }
 
 export const TestChatSection = () => {
@@ -34,6 +43,8 @@ export const TestChatSection = () => {
     setIsLoading(true);
 
     let assistantContent = "";
+    let sources: Source[] = [];
+    let confidence = "high";
     
     try {
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/test-chat`, {
@@ -43,13 +54,21 @@ export const TestChatSection = () => {
           'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
         body: JSON.stringify({
-          messages: [...messages, userMessage],
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
           customerId,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded. Please try again in a moment.');
+        } else if (response.status === 402) {
+          toast.error('AI credits depleted. Please add credits to continue.');
+        } else {
+          toast.error('Failed to get response');
+        }
+        setMessages(prev => prev.slice(0, -1));
+        return;
       }
 
       const reader = response.body?.getReader();
@@ -58,7 +77,7 @@ export const TestChatSection = () => {
       if (!reader) throw new Error('No response body');
 
       // Add empty assistant message that we'll update
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '', sources: [], confidence: 'high' }]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -75,13 +94,32 @@ export const TestChatSection = () => {
             try {
               const parsed = JSON.parse(data);
               const content = parsed.choices?.[0]?.delta?.content;
+              const metadata = parsed.choices?.[0]?.delta?.metadata;
+              
               if (content) {
                 assistantContent += content;
                 setMessages(prev => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
                     role: 'assistant',
-                    content: assistantContent
+                    content: assistantContent,
+                    sources,
+                    confidence
+                  };
+                  return newMessages;
+                });
+              }
+
+              if (metadata) {
+                sources = metadata.sources || [];
+                confidence = metadata.confidence || 'high';
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    role: 'assistant',
+                    content: assistantContent,
+                    sources,
+                    confidence
                   };
                   return newMessages;
                 });
@@ -142,6 +180,28 @@ export const TestChatSection = () => {
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  
+                  {message.role === 'assistant' && message.sources && message.sources.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-border/50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <BookOpen className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Sources used:</span>
+                        {message.confidence === 'low' && (
+                          <Badge variant="secondary" className="text-xs">
+                            Low confidence
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {message.sources.map((source) => (
+                          <Badge key={source.id} variant="outline" className="text-xs">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            {source.title} ({Math.round(source.relevance * 100)}%)
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
