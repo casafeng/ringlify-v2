@@ -23,11 +23,16 @@ export const TestCallStep = ({ onNext, phoneNumberConfigured }: TestCallStepProp
         .from('phone_numbers')
         .select('phone_number, business_phone_number, setup_method')
         .eq('customer_id', customerId)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (data) {
         // Show the number they should call (business number for forwarding, twilio number for purchased)
-        setPhoneNumber(data.setup_method === 'forwarding' ? data.business_phone_number : data.phone_number);
+        const numberToCall = data.setup_method === 'forwarding' 
+          ? (data.business_phone_number || data.phone_number)
+          : data.phone_number;
+        setPhoneNumber(numberToCall);
       }
     };
 
