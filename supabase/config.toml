@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.test-chat]
 verify_jwt = true
+
+[functions.twilio-status]
+verify_jwt = false
