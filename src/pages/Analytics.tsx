@@ -2,30 +2,48 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { TrendingUp, Phone, Clock, CheckCircle } from "lucide-react";
-
-const callVolumeData = [
-  { date: "Jan 10", calls: 45, answered: 42 },
-  { date: "Jan 11", calls: 52, answered: 48 },
-  { date: "Jan 12", calls: 48, answered: 47 },
-  { date: "Jan 13", calls: 61, answered: 58 },
-  { date: "Jan 14", calls: 55, answered: 53 },
-  { date: "Jan 15", calls: 67, answered: 64 },
-  { date: "Jan 16", calls: 58, answered: 56 },
-];
-
-const responseTimeData = [
-  { hour: "9 AM", avgTime: 12 },
-  { hour: "10 AM", avgTime: 8 },
-  { hour: "11 AM", avgTime: 10 },
-  { hour: "12 PM", avgTime: 15 },
-  { hour: "1 PM", avgTime: 18 },
-  { hour: "2 PM", avgTime: 11 },
-  { hour: "3 PM", avgTime: 9 },
-  { hour: "4 PM", avgTime: 13 },
-  { hour: "5 PM", avgTime: 16 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCustomer } from "@/contexts/CustomerContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Analytics = () => {
+  const { customerId } = useCustomer();
+
+  const { data: callsData = [], isLoading: callsLoading } = useQuery({
+    queryKey: ["analytics-calls", customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+      const { data, error } = await supabase.from("calls").select("*").eq("customer_id", customerId).order("started_at", { ascending: true });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!customerId,
+  });
+
+  const totalCalls = callsData.length;
+  const completedCalls = callsData.filter(c => c.status === 'completed').length;
+  const answerRate = totalCalls > 0 ? ((completedCalls / totalCalls) * 100).toFixed(1) : 0;
+  const avgDuration = callsData.length > 0 ? Math.round(callsData.reduce((sum, call) => sum + (call.duration_sec || 0), 0) / callsData.length) : 0;
+
+  const callVolumeData = callsData.reduce((acc: any[], call) => {
+    const date = new Date(call.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const existing = acc.find(item => item.date === date);
+    if (existing) { existing.calls += 1; if (call.status === 'completed') existing.answered += 1; }
+    else { acc.push({ date, calls: 1, answered: call.status === 'completed' ? 1 : 0 }); }
+    return acc;
+  }, []);
+
+  const responseTimeData = callsData.reduce((acc: any[], call) => {
+    if (!call.duration_sec) return acc;
+    const hour = new Date(call.started_at).getHours();
+    const hourLabel = `${hour % 12 || 12} ${hour >= 12 ? 'PM' : 'AM'}`;
+    const existing = acc.find(item => item.hour === hourLabel);
+    if (existing) { existing.total += call.duration_sec; existing.count += 1; existing.avgTime = Math.round(existing.total / existing.count); }
+    else { acc.push({ hour: hourLabel, avgTime: call.duration_sec, total: call.duration_sec, count: 1 }); }
+    return acc;
+  }, []);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -40,52 +58,79 @@ const Analytics = () => {
         <div className="grid gap-4 md:grid-cols-4">
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Phone className="h-4 w-4 text-chart-1" />
-                <span className="text-xs text-muted-foreground">Answer Rate</span>
-              </div>
-              <div className="text-2xl font-bold">95.8%</div>
-              <div className="flex items-center gap-1 text-sm mt-1">
-                <TrendingUp className="h-4 w-4 text-success" />
-                <span className="text-success">+2.3%</span>
-              </div>
+              {callsLoading ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Phone className="h-4 w-4 text-chart-1" />
+                    <span className="text-xs text-muted-foreground">Answer Rate</span>
+                  </div>
+                  <div className="text-2xl font-bold">{answerRate}%</div>
+                  <div className="flex items-center gap-1 text-sm mt-1">
+                    <span className="text-muted-foreground">
+                      {completedCalls}/{totalCalls} calls
+                    </span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-chart-2" />
-                <span className="text-xs text-muted-foreground">Avg Handle Time</span>
-              </div>
-              <div className="text-2xl font-bold">3m 24s</div>
-              <div className="flex items-center gap-1 text-sm mt-1">
-                <TrendingUp className="h-4 w-4 text-success" />
-                <span className="text-success">-12s</span>
-              </div>
+              {callsLoading ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="h-4 w-4 text-chart-2" />
+                    <span className="text-xs text-muted-foreground">Avg Handle Time</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {Math.floor(avgDuration / 60)}m {avgDuration % 60}s
+                  </div>
+                  <div className="flex items-center gap-1 text-sm mt-1">
+                    <span className="text-muted-foreground">per call</span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle className="h-4 w-4 text-success" />
-                <span className="text-xs text-muted-foreground">Task Completion</span>
-              </div>
-              <div className="text-2xl font-bold">87.4%</div>
-              <div className="flex items-center gap-1 text-sm mt-1">
-                <TrendingUp className="h-4 w-4 text-success" />
-                <span className="text-success">+5.1%</span>
-              </div>
+              {callsLoading ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span className="text-xs text-muted-foreground">Total Calls</span>
+                  </div>
+                  <div className="text-2xl font-bold">{totalCalls}</div>
+                  <div className="flex items-center gap-1 text-sm mt-1">
+                    <span className="text-muted-foreground">all time</span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
           <Card className="rounded-2xl shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs text-muted-foreground">Customer Satisfaction</span>
-              </div>
-              <div className="text-2xl font-bold">4.7/5.0</div>
-              <div className="flex items-center gap-1 text-sm mt-1">
-                <span className="text-muted-foreground">Based on 234 ratings</span>
-              </div>
+              {callsLoading ? (
+                <Skeleton className="h-20 w-full" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-muted-foreground">In Progress</span>
+                  </div>
+                  <div className="text-2xl font-bold">
+                    {callsData.filter(c => c.status === 'in-progress').length}
+                  </div>
+                  <div className="flex items-center gap-1 text-sm mt-1">
+                    <span className="text-muted-foreground">active now</span>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>

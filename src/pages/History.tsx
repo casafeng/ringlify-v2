@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Eye, Phone, Search, Filter } from "lucide-react";
 import { CallDetailsDrawer } from "@/components/CallDetailsDrawer";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCustomer } from "@/contexts/CustomerContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Call {
   id: string;
@@ -34,69 +38,24 @@ const formatTimestamp = (timestamp: string) => {
 const History = () => {
   const [selectedCall, setSelectedCall] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { customerId } = useCustomer();
 
-  const calls: Call[] = [
-    {
-      id: '1',
-      twilio_call_sid: 'CA1234567890abcdef',
-      phone_number: '+1 (555) 123-4567',
-      transcript: 'Hi, I would like to schedule an appointment for next Tuesday at 2 PM for a haircut.',
-      status: 'completed',
-      sentiment: 'positive',
-      intent: 'book_appointment',
-      started_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      ended_at: new Date(Date.now() - 1000 * 60 * 26).toISOString(),
-      duration_sec: 245,
+  const { data: calls = [], isLoading } = useQuery({
+    queryKey: ["calls", customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+      
+      const { data, error } = await supabase
+        .from("calls")
+        .select("*")
+        .eq("customer_id", customerId)
+        .order("started_at", { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as Call[];
     },
-    {
-      id: '2',
-      twilio_call_sid: 'CA2234567890abcdef',
-      phone_number: '+1 (555) 234-5678',
-      transcript: 'Hello, I need to reschedule my appointment from Friday to Monday. Is that possible?',
-      status: 'completed',
-      sentiment: 'neutral',
-      intent: 'reschedule',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      ended_at: new Date(Date.now() - 1000 * 60 * 60 * 2 + 180000).toISOString(),
-      duration_sec: 180,
-    },
-    {
-      id: '3',
-      twilio_call_sid: 'CA3234567890abcdef',
-      phone_number: '+1 (555) 345-6789',
-      transcript: 'What are your business hours? Do you work on weekends?',
-      status: 'completed',
-      sentiment: 'positive',
-      intent: 'inquiry',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-      ended_at: new Date(Date.now() - 1000 * 60 * 60 * 5 + 312000).toISOString(),
-      duration_sec: 312,
-    },
-    {
-      id: '4',
-      twilio_call_sid: 'CA4234567890abcdef',
-      phone_number: '+1 (555) 456-7890',
-      transcript: 'I need to cancel my appointment for tomorrow. Something came up.',
-      status: 'completed',
-      sentiment: 'neutral',
-      intent: 'cancel',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-      ended_at: new Date(Date.now() - 1000 * 60 * 60 * 24 + 198000).toISOString(),
-      duration_sec: 198,
-    },
-    {
-      id: '5',
-      twilio_call_sid: 'CA5234567890abcdef',
-      phone_number: '+1 (555) 567-8901',
-      transcript: 'Hi, can you tell me about your pricing for color treatments?',
-      status: 'completed',
-      sentiment: 'positive',
-      intent: 'pricing_inquiry',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-      ended_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2 + 267000).toISOString(),
-      duration_sec: 267,
-    },
-  ];
+    enabled: !!customerId,
+  });
 
   const handleViewDetails = (call: Call) => {
     setSelectedCall({
