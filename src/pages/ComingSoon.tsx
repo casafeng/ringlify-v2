@@ -1,13 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Phone } from "lucide-react";
+import { DottedSurface } from "@/components/ui/dotted-surface";
+import { ThemeProvider } from "next-themes";
 
 const ComingSoon = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full text-center space-y-8 animate-fade-in">
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="relative min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4 overflow-hidden">
+        <DottedSurface />
+        <div className="max-w-2xl w-full text-center space-y-8 animate-fade-in relative z-10">
         {/* Logo/Icon */}
         <div className="flex justify-center">
           <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
@@ -41,8 +45,9 @@ const ComingSoon = () => {
         <p className="text-sm text-muted-foreground pt-8">
           Be the first to know when we launch
         </p>
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 };
 
