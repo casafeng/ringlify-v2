@@ -2,3 +2,9 @@ project_id = "ctjlgvosazekpxxtxeia"
 
 [functions.provision-twilio-number]
 verify_jwt = false
+
+[functions.scrape-website]
+verify_jwt = true
+
+[functions.test-chat]
+verify_jwt = true
