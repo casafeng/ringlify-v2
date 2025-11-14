@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, TrendingUp, Clock, MessageSquare, Play, ArrowRight } from "lucide-react";
+import { Phone, TrendingUp, Clock, MessageSquare, Play, ArrowRight, CheckCircle2, Circle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -10,10 +10,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect } from "react";
+import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { customerId } = useCustomer();
+  const { isComplete, isChecking } = useOnboardingProgress();
   const queryClient = useQueryClient();
 
   // Fetch real calls data
@@ -94,6 +96,29 @@ const Dashboard = () => {
             Here's what's happening with your AI assistant today
           </p>
         </div>
+
+        {/* Setup Progress Card - Only show if not complete */}
+        {!isChecking && !isComplete && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background shadow-lg">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Circle className="h-5 w-5 text-primary" />
+                    Complete Your Setup
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Finish setting up your AI assistant to start receiving calls
+                  </p>
+                </div>
+                <Button onClick={() => navigate('/onboarding')} className="gap-2">
+                  Continue Setup
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+        )}
 
         {/* Stats Grid */}
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
