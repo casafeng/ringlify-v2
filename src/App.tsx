@@ -17,6 +17,7 @@ import Analytics from "./pages/Analytics";
 import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 import PhoneSetup from "./pages/PhoneSetup";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
             <Route path="/customization" element={<ProtectedRoute><Customization /></ProtectedRoute>} />
