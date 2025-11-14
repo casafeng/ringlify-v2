@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Eye, Phone, Search, Filter } from "lucide-react";
 import { CallDetailsDrawer } from "@/components/CallDetailsDrawer";
 import { Input } from "@/components/ui/input";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 interface Call {
   id: string;
@@ -39,6 +40,7 @@ const History = () => {
   const [selectedCall, setSelectedCall] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { customerId } = useCustomer();
+  const queryClient = useQueryClient();
 
   const { data: calls = [], isLoading } = useQuery({
     queryKey: ["calls", customerId],
@@ -56,6 +58,50 @@ const History = () => {
     },
     enabled: !!customerId,
   });
+
+  // Set up real-time subscription for new calls
+  useEffect(() => {
+    if (!customerId) return;
+
+    const channel = supabase
+      .channel('history-calls')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'calls',
+          filter: `customer_id=eq.${customerId}`
+        },
+        (payload) => {
+          // Show toast notification for new call
+          toast.success("New call received", {
+            description: `Call from ${payload.new.phone_number}`
+          });
+          
+          // Invalidate queries to refetch data
+          queryClient.invalidateQueries({ queryKey: ["calls", customerId] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'calls',
+          filter: `customer_id=eq.${customerId}`
+        },
+        () => {
+          // Invalidate queries when call is updated (e.g., status change)
+          queryClient.invalidateQueries({ queryKey: ["calls", customerId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [customerId, queryClient]);
 
   const handleViewDetails = (call: Call) => {
     setSelectedCall({
