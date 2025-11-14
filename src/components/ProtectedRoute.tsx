@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCustomer } from "@/contexts/CustomerContext";
 import { Loader2 } from "lucide-react";
+import { useOnboardingProgress } from "@/hooks/useOnboardingProgress";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,6 +11,8 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useCustomer();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isChecking } = useOnboardingProgress();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -17,7 +20,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     }
   }, [user, loading, navigate]);
 
-  if (loading) {
+  if (loading || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
