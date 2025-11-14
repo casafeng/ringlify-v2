@@ -42,16 +42,49 @@ serve(async (req) => {
       const from = params.get('From') || '';
       const callSid = params.get('CallSid') || '';
       const to = params.get('To') || '';
+      const forwardedFrom = params.get('ForwardedFrom') || '';
       const callStatus = params.get('CallStatus') || 'initiated';
 
-      console.log('Call details - From:', from, 'To:', to, 'CallSid:', callSid, 'Status:', callStatus);
+      console.log('Call details - From:', from, 'To:', to, 'ForwardedFrom:', forwardedFrom, 'CallSid:', callSid, 'Status:', callStatus);
 
-      // Look up customer_id from phone_numbers table using the To number
-      const { data: phoneNumber, error: phoneError } = await supabase
-        .from('phone_numbers')
-        .select('customer_id')
-        .eq('phone_number', to)
-        .maybeSingle();
+      // Look up customer_id from phone_numbers table
+      // Priority 1: Check ForwardedFrom (if call was forwarded from customer's business number)
+      // Priority 2: Check To number (if customer purchased a Twilio number)
+      let phoneNumber = null;
+      let phoneError = null;
+
+      if (forwardedFrom) {
+        console.log('Checking ForwardedFrom for customer lookup:', forwardedFrom);
+        const result = await supabase
+          .from('phone_numbers')
+          .select('customer_id, id, business_phone_number')
+          .eq('business_phone_number', forwardedFrom)
+          .maybeSingle();
+        
+        phoneNumber = result.data;
+        phoneError = result.error;
+        
+        if (phoneNumber) {
+          console.log('Found customer via ForwardedFrom (forwarding setup)');
+        }
+      }
+      
+      // Fallback to To number lookup if no ForwardedFrom match
+      if (!phoneNumber) {
+        console.log('Checking To number for customer lookup:', to);
+        const result = await supabase
+          .from('phone_numbers')
+          .select('customer_id, id, phone_number')
+          .eq('phone_number', to)
+          .maybeSingle();
+        
+        phoneNumber = result.data;
+        phoneError = result.error;
+        
+        if (phoneNumber) {
+          console.log('Found customer via To number (purchased setup)');
+        }
+      }
 
       if (phoneError) {
         console.error('Error looking up phone number:', phoneError);
@@ -114,7 +147,8 @@ serve(async (req) => {
           twilio_call_sid: callSid,
           status: 'in-progress',
           customer_id: customerId,
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          forwarded_from: forwardedFrom || null
         })
         .select()
         .single();

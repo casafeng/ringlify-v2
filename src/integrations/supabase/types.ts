@@ -289,6 +289,7 @@ export type Database = {
           customer_id: string | null
           duration_sec: number | null
           ended_at: string | null
+          forwarded_from: string | null
           id: string
           intent: string | null
           phone_number: string
@@ -305,6 +306,7 @@ export type Database = {
           customer_id?: string | null
           duration_sec?: number | null
           ended_at?: string | null
+          forwarded_from?: string | null
           id?: string
           intent?: string | null
           phone_number: string
@@ -321,6 +323,7 @@ export type Database = {
           customer_id?: string | null
           duration_sec?: number | null
           ended_at?: string | null
+          forwarded_from?: string | null
           id?: string
           intent?: string | null
           phone_number?: string
@@ -681,33 +684,83 @@ export type Database = {
           },
         ]
       }
+      onboarding_progress: {
+        Row: {
+          completed_steps: Json | null
+          created_at: string | null
+          current_step: number | null
+          customer_id: string
+          id: string
+          is_completed: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_steps?: Json | null
+          created_at?: string | null
+          current_step?: number | null
+          customer_id: string
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_steps?: Json | null
+          created_at?: string | null
+          current_step?: number | null
+          customer_id?: string
+          id?: string
+          is_completed?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: true
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_numbers: {
         Row: {
+          business_phone_number: string | null
           created_at: string
           customer_id: string
+          forwarding_instructions: Json | null
+          forwarding_verified: boolean | null
           id: string
           phone_number: string
           settings: Json | null
+          setup_method: string | null
           status: string
           twilio_sid: string | null
           updated_at: string
         }
         Insert: {
+          business_phone_number?: string | null
           created_at?: string
           customer_id: string
+          forwarding_instructions?: Json | null
+          forwarding_verified?: boolean | null
           id?: string
           phone_number: string
           settings?: Json | null
+          setup_method?: string | null
           status?: string
           twilio_sid?: string | null
           updated_at?: string
         }
         Update: {
+          business_phone_number?: string | null
           created_at?: string
           customer_id?: string
+          forwarding_instructions?: Json | null
+          forwarding_verified?: boolean | null
           id?: string
           phone_number?: string
           settings?: Json | null
+          setup_method?: string | null
           status?: string
           twilio_sid?: string | null
           updated_at?: string
