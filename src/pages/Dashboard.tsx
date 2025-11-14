@@ -4,51 +4,34 @@ import { Phone, TrendingUp, Clock, MessageSquare, Play, ArrowRight } from "lucid
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { ConversationalWidget } from "@/components/ConversationalWidget";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCustomer } from "@/contexts/CustomerContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [loading] = useState(false);
+  const { customerId } = useCustomer();
 
-  // Mock data for demonstration
-  const calls = [
-    {
-      id: '1',
-      phone_number: '+1 (555) 123-4567',
-      started_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-      status: 'completed',
-      duration_sec: 245,
+  // Fetch real calls data
+  const { data: calls = [], isLoading } = useQuery({
+    queryKey: ["calls", customerId],
+    queryFn: async () => {
+      if (!customerId) return [];
+      
+      const { data, error } = await supabase
+        .from("calls")
+        .select("*")
+        .eq("customer_id", customerId)
+        .order("started_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return data || [];
     },
-    {
-      id: '2',
-      phone_number: '+1 (555) 234-5678',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-      status: 'completed',
-      duration_sec: 180,
-    },
-    {
-      id: '3',
-      phone_number: '+1 (555) 345-6789',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-      status: 'completed',
-      duration_sec: 312,
-    },
-    {
-      id: '4',
-      phone_number: '+1 (555) 456-7890',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-      status: 'completed',
-      duration_sec: 198,
-    },
-    {
-      id: '5',
-      phone_number: '+1 (555) 567-8901',
-      started_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-      status: 'completed',
-      duration_sec: 267,
-    },
-  ];
+    enabled: !!customerId,
+  });
 
   // Calculate metrics
   const today = new Date();
@@ -94,10 +77,16 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">{calls.length}</div>
-              <p className="text-xs text-muted-foreground mt-2">
-                +{todayCalls.length} today
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-9 w-16" />
+              ) : (
+                <>
+                  <div className="text-3xl font-semibold">{calls.length}</div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    +{todayCalls.length} today
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -109,12 +98,18 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">
-                {Math.floor(avgDuration / 60)}m {avgDuration % 60}s
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Per call
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-9 w-20" />
+              ) : (
+                <>
+                  <div className="text-3xl font-semibold">
+                    {Math.floor(avgDuration / 60)}m {avgDuration % 60}s
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Per call
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -126,12 +121,18 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">
-                {calls.length > 0 ? Math.round((completedCalls / calls.length) * 100) : 0}%
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                {completedCalls} completed
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-9 w-16" />
+              ) : (
+                <>
+                  <div className="text-3xl font-semibold">
+                    {calls.length > 0 ? Math.round((completedCalls / calls.length) * 100) : 0}%
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {completedCalls} completed
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -143,12 +144,18 @@ const Dashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-semibold">
-                {calls.filter(c => c.status === 'in-progress').length}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                Live calls
-              </p>
+              {isLoading ? (
+                <Skeleton className="h-9 w-12" />
+              ) : (
+                <>
+                  <div className="text-3xl font-semibold">
+                    {calls.filter(c => c.status === 'in-progress').length}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Live calls
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -176,7 +183,7 @@ const Dashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {isLoading ? (
                   <div className="text-center py-12 text-muted-foreground">
                     Loading calls...
                   </div>
